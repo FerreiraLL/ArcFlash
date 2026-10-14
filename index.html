@@ -1,0 +1,915 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>CALCULADORA DE ARCO ELÉTRICO E ENERGIA INCIDENTE</title>
+  <style>
+    :root{font-family:Inter,system-ui,Segoe UI,Roboto,Arial; color-scheme:dark;}
+    body{margin:0; background:#0b1220; color:#e6eef8; padding:12px 24px; display:flex; justify-content:center;}
+    .wrap{max-width:1500px; width:100%;}
+    .card{
+      background:linear-gradient(180deg,#0b1220 0%, #071019 100%);
+      border:1px solid rgba(148,163,184,.22);
+      border-radius:18px; padding:20px 20px 24px; box-shadow:0 10px 30px rgba(2,6,23,.65);
+    }
+    h1{margin:0 0 4px; text-align:center; text-transform:uppercase; font-size:18px; letter-spacing:.02em; line-height:1.25;}
+    .subtitle{margin:0 0 16px; text-align:center; font-size:13px; color:#94a3b8; font-weight:500;}
+    h3{
+      margin:18px 0 10px; font-size:15px; color:#f1f5f9;
+      border-bottom:1px solid rgba(255,255,255,.08); padding-bottom:4px;
+      text-transform:uppercase;
+    }
+    label{display:block; font-size:12px; color:#cbd5f5; margin-bottom:2px; padding-left:0px;}
+    input, select{
+      width:100%; box-sizing:border-box; padding:5px 9px; border-radius:8px;
+      border:1px solid rgba(148,163,184,.45); background:#020617; color:#e2e8f0; font-size:13px;
+    }
+    input:focus, select:focus{outline:none; border-color:#38bdf8; box-shadow:0 0 0 1px rgba(56,189,248,.25);}
+    
+    /* Regras de Cálculo - Collapsible Container Principal */
+    details.regrasContainer{
+      margin-top:20px;
+      border:1px solid rgba(148,163,184,.22);
+      background:rgba(2,6,23,.35);
+      border-radius:12px;
+      padding:14px;
+    }
+    details.regrasContainer > summary.regrasTitle{
+      font-size:12.5px;
+      font-weight:700;
+      color:#f1f5f9;
+      text-transform:uppercase;
+      cursor:pointer;
+      list-style:none;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      user-select:none;
+    }
+    details.regrasContainer > summary.regrasTitle::-webkit-details-marker{ display:none; }
+    details.regrasContainer > summary.regrasTitle::before {
+      content: '▶';
+      font-size: 10px;
+      transition: transform 0.2s ease;
+      color: #94a3b8; /* Setas cinzas */
+    }
+    details[open].regrasContainer > summary.regrasTitle::before {
+      transform: rotate(90deg);
+    }
+    details[open].regrasContainer > summary.regrasTitle {
+      margin-bottom:12px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      padding-bottom:6px;
+    }
+
+    /* Sub-regras colapsáveis */
+    details.regraItem{
+      margin-bottom:8px;
+      border:1px solid rgba(148,163,184,.15);
+      background:rgba(15, 23, 42, 0.6);
+      border-radius:8px;
+      padding:8px 12px;
+      color:#cbd5f5;
+      font-size:12px;
+      line-height:1.45;
+    }
+    details.regraItem:last-child {
+      margin-bottom:0;
+    }
+    details.regraItem summary{
+      font-size:12.5px;
+      font-weight:600;
+      color:#e2e8f0;
+      cursor:pointer;
+      list-style:none;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      user-select:none;
+    }
+    details.regraItem summary::-webkit-details-marker{ display:none; }
+    details.regraItem summary::before {
+      content: '▶';
+      font-size: 8px;
+      transition: transform 0.2s ease;
+      color: #94a3b8; /* Setas cinzas */
+    }
+    details[open].regraItem summary::before {
+      transform: rotate(90deg);
+    }
+    .regraContent{
+      margin-top:8px;
+      padding-top:8px;
+      border-top:1px solid rgba(255,255,255,.06);
+      white-space: pre-wrap;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    .actions{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:16px;}
+    button{
+      border:none; cursor:pointer; padding:10px 25px; border-radius:999px; font-weight:800;
+      background:linear-gradient(135deg,#38bdf8,#6366f1); color:white; letter-spacing:.03em;
+      box-shadow:0 10px 18px rgba(37,99,235,.35); text-transform:uppercase; font-size:12.5px;
+    }
+    .result{
+      margin:0 auto; width:fit-content; max-width:100%; box-sizing:border-box;
+      overflow-x:auto;
+    }
+    pre{margin:0; white-space:pre-wrap; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13.2px; line-height:1.35;}
+    /* Layout em duas colunas */
+    .layout{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; margin-top:20px; align-items:stretch;}
+
+    .painel{
+      border:1px solid rgba(148,163,184,.22);
+      background:rgba(2,6,23,.35);
+      border-radius:12px; padding:14px;
+    }
+    .painel > h3:first-child{margin-top:0;}
+    .campos{display:grid; gap:10px; padding:0 10px;}
+    #txt{min-width:60ch;}
+    @media (max-width:1200px){ .layout{grid-template-columns:minmax(0,1fr);} #txt{min-width:0;} }
+    @media (max-width:600px){
+      body{padding:8px;}
+      .card{padding:12px 10px 14px;}
+      .painel{padding:10px 8px;}
+      .campos{padding:0 4px;}
+      pre{font-size:clamp(7px, 2.3vw, 13.2px); white-space:pre;}
+    }
+    #txt{ color:#94a3b8; }
+    #txt .v{ color:#ffffff; }
+    #txt .erro{ color:#f87171; }
+  </style>
+</head>
+<body>
+
+  <!-- #region DADOS DE ENTRADA -->
+  <div class="wrap">
+    <div class="card">
+      <h1>CALCULADORA DE ENERGIA INCIDENTE</h1>
+      <div class="subtitle">(método de cálculo: ABNT NBR17227:2025 / IEEE 1584)</div>
+
+      <!-- REGRAS DE CÁLCULO -->
+      <details class="regrasContainer">
+        <summary class="regrasTitle">REGRAS DE CÁLCULO</summary>
+
+        <details class="regraItem">
+          <summary>(VT) Valores Típicos</summary>
+          <div class="regraContent">CM AT : D 914,4mm : G 152mm : ALP 1143mm x 762mm x 762mm
+CCM AT : D 914,4mm : G 152mm : ALP 914,4mm x 914,4mm x 914,4mm
+CM BT : D 609,6mm : G 32mm : ALP 508mm x 508mm x 508mm
+CCM BT : D 457,2mm : G 25mm : ALP 355,6mm x 304,8mm x 203,2mm</div>
+        </details>
+
+        <details class="regraItem">
+          <summary>(RC.1) Corrente de Curto-Circuito Trifásica (ICC)[kA]</summary>
+          <div class="regraContent">ICC = kVA/(√3*V*(Z%/100))</div>
+        </details>
+
+        <details class="regraItem">
+          <summary>(RC.2) Fator de Corrente de Arco Reduzida (FCiarc)</summary>
+          <div class="regraContent">FCiarc = (k1*(V/1000)**6)+(k2*(V/1000)**5)+(k3*(V/1000)**4)+(k4*(V/1000)**3)+(k5*(V/1000)**2)+(k6*(V/1000)**1)+k7</div>
+        </details>
+
+        <details class="regraItem">
+          <summary>(RC.3) Fator de Correção do Invólucro (FCinvo)</summary>
+          <div class="regraContent">Para Configuração dos Eletrodos VOA e HOA:
+	FCinvo == 1
+	
+Para Configuração dos Eletrodos VCB, VCBB e HCB:
+	tipo == (V&lt;600V &amp;&amp; A&lt;508mm &amp;&amp; L&lt;508mm &amp;&amp; P&lt;203.2mm)? "raso" : "típico";
+
+	a = (4/VCB : 10/VCBB : 10/HCB)
+ 	b = (20/VCB : 24/VCBB : 22/HCB)
+
+	A1 = (A&lt;508mm &amp;&amp; tipo=="típico")? 20
+	A1 = (A&lt;508mm &amp;&amp; tipo=="raso")? (0.03937*A)
+	A1 = (A&gt;=508mm &amp;&amp; A&lt;=660.4)? (0.03937*A)
+	A1 = (A&gt;660.4mm &amp;&amp; A&lt;=1244.6)? ((660.4+(A-660.4)*((V/1000+a)/b))*(1/25.4))
+	A1 = (A&gt;1244.6)? ((660.4+(1244.6-660.4)*((V/1000+a)/b))*(1/25.4))
+
+	L1 = (L&lt;508mm &amp;&amp; tipo=="típico")? 20
+	L1 = (L&lt;508mm &amp;&amp; tipo=="raso")? (0.03937*L)
+	L1 = (L&gt;=508mm &amp;&amp; L&lt;=660.4)? (0.03937*L)
+	L1 = (L&gt;660.4mm &amp;&amp; L&lt;=1244.6)? ((660.4+(L-660.4)*((V/1000+a)/b))*(1/25.4))
+	L1 = (L&gt;1244.6)? ((660.4+(1244.6-660.4)*((V/1000+a)/b))*(1/25.4))
+
+	EES = (A1+L1)/2
+
+	FCinvo = (tipo=="raso")? (1/(b1*EES**2+b2*EES+b3))
+	FCinvo = (tipo=="típico")? (b1*EES**2+b2*EES+b3)
+
+	Tabela de coeficientes b p/ FCinvo
+    	
+        Típico:VCB:  {b1: -0.0003, b2: 0.03441, b3: 0.4325},
+        Típico:VCBB: {b1: -0.0003, b2: 0.032,   b3: 0.479},
+        Típico:HCB:  {b1: -0.0002, b2: 0.01935, b3: 0.6899}
+    	
+        Raso:VCB:    {b1: 0.00222, b2: -0.0256, b3: 0.6222},
+        Raso:VCBB:   {b1: -0.0028, b2: 0.1194,  b3: -0.2778},
+        Raso:HCB:    {b1: -0.0006, b2: 0.03722, b3: 0.4778}</div>
+        </details>
+
+        <details class="regraItem">
+          <summary>(RC.4) Correntes de Arco Médias de Referência (IARCm600V, IARCm2700V, IARCm14300V)[kA]</summary>
+          <div class="regraContent">IARCm600V=(10**(k1+k2*log(ICC)+k3*log(G)))*(k4*ICC**6+k5*ICC**5+k6*ICC**4+k7*ICC**3+k8*ICC**2+k9*ICC+k10);
+IARCm2700V=(10**(k1+k2*log(ICC)+k3*log(G)))*(k4*ICC**6+k5*ICC**5+k6*ICC**4+k7*ICC**3+k8*ICC**2+k9*ICC+k10);
+IARCm14300V=(10**(k1+k2*log(ICC)+k3*log(G)))*(k4*ICC**6+k5*ICC**5+k6*ICC**4+k7*ICC**3+k8*ICC**2+k9*ICC+k10);</div>
+        </details>
+
+        <details class="regraItem">
+          <summary>(RC.5) Correntes de Arco Reduzidas de Referência (IARCr600V, IARCr2700V, IARCr14300V)[kA]</summary>
+          <div class="regraContent">IARCr600V = IARCm600V*(1-0.5*FCiarc)
+IARCr2700V = IARCm2700V*(1-0.5*FCiarc)
+IARCr14300V = IARCm14300V*(1-0.5*FCiarc)</div>
+        </details>
+
+        <details class="regraItem">
+          <summary>(RC.6) Corrente de Arco Média Final (IARCm)[kA]</summary>
+          <div class="regraContent">IARCm = (V&gt;=208 &amp;&amp; V&lt;=600)? 1/√(((0.6/(V/1000))**2)*((1/(IARCm600V**2))-((0.6**2-(V/1000)**2)/(0.6**2*ICC**2))));
+IARCm = (V&gt;600 &amp;&amp; V&lt;=2700)? (((((IARCm2700V-IARCm600V)/2.1)*((V/1000)-2.7)+IARCm2700V)*(2.7-(V/1000)))/2.1)+(((((IARCm14300V-IARCm2700V)/11.6)*((V/1000)-14.3)+IARCm14300V)*((V/1000)-0.6))/2.1);
+IARCm = (V&gt;2700 &amp;&amp; V&lt;=15000)? ((IARCm14300V-IARCm2700V)/11.6)*((V/1000)-14.3)+IARCm14300V;</div>
+        </details>
+
+        <details class="regraItem">
+          <summary>(RC.7) Corrente de Arco Reduzida Final (IARCr)[kA]</summary>
+          <div class="regraContent">IARCr = (V&gt;=208 &amp;&amp; V&lt;=600)? 1/√(((0.6/(V/1000))**2)*((1/(IARCr600V**2))-((0.6**2-(V/1000)**2)/(0.6**2*ICC**2))));
+IARCr = (V&gt;600 &amp;&amp; V&lt;=2700)? (((((IARCr2700V-IARCr600V)/2.1)*((V/1000)-2.7)+IARCr2700V)*(2.7-(V/1000)))/2.1)+(((((IARCr14300V-IARCr2700V)/11.6)*((V/1000)-14.3)+IARCr14300V)*((V/1000)-0.6))/2.1);
+IARCr = (V&gt;2700 &amp;&amp; V&lt;=15000)? ((IARCr14300V-IARCr2700V)/11.6)*((V/1000)-14.3)+IARCr14300V;</div>
+        </details>
+
+        <details class="regraItem">
+          <summary>(RC.8) Energias Incidentes Médias de Referência (EIm600V, EIm2700V, EIm14300V)[cal/cm²]</summary>
+          <div class="regraContent">EIm600V = (12.552/50)*T*(10**(k1+k2*log(G)+(k3*IARCm600V/(k4*ICC**7+k5*ICC**6+k6*ICC**5+k7*ICC**4+k8*ICC**3+k9*ICC**2+k10*ICC))+k11*log(ICC)+k12*log(D)+k13*log(IARCm600V)+log(1/FCinvo)))/4.184;
+EIm2700V = (12.552/50)*T*(10**(k1+k2*log(G)+(k3*IARCm2700V/(k4*ICC**7+k5*ICC**6+k6*ICC**5+k7*ICC**4+k8*ICC**3+k9*ICC**2+k10*ICC))+k11*log(ICC)+k12*log(D)+k13*log(IARCm2700V)+log(1/FCinvo)))/4.184;
+EIm14300V = (12.552/50)*T*(10**(k1+k2*log(G)+(k3*IARCm14300V/(k4*ICC**7+k5*ICC**6+k6*ICC**5+k7*ICC**4+k8*ICC**3+k9*ICC**2+k10*ICC))+k11*log(ICC)+k12*log(D)+k13*log(IARCm14300V)+log(1/FCinvo)))/4.184;</div>
+        </details>
+
+        <details class="regraItem">
+          <summary>(RC.9) Energias Incidentes Reduzidas de Referência (EIr600V, EIr2700V, EIr14300V)[cal/cm²]</summary>
+          <div class="regraContent">EIr600V = (12.552/50)*T*(10**(k1+k2*log(G)+(k3*IARCr600V/(k4*ICC**7+k5*ICC**6+k6*ICC**5+k7*ICC**4+k8*ICC**3+k9*ICC**2+k10*ICC))+k11*log(ICC)+k12*log(D)+k13*log(IARCr600V)+log(1/FCinvo)))/4.184;
+EIr2700V = (12.552/50)*T*(10**(k1+k2*log(G)+(k3*IARCr2700V/(k4*ICC**7+k5*ICC**6+k6*ICC**5+k7*ICC**4+k8*ICC**3+k9*ICC**2+k10*ICC))+k11*log(ICC)+k12*log(D)+k13*log(IARCr2700V)+log(1/FCinvo)))/4.184;
+EIr14300V = (12.552/50)*T*(10**(k1+k2*log(G)+(k3*IARCr14300V/(k4*ICC**7+k5*ICC**6+k6*ICC**5+k7*ICC**4+k8*ICC**3+k9*ICC**2+k10*ICC))+k11*log(ICC)+k12*log(D)+k13*log(IARCr14300V)+log(1/FCinvo)))/4.184;</div>
+        </details>
+
+        <details class="regraItem">
+          <summary>(RC.10) Energia Incidente Média Final (EIm)[cal/cm²]</summary>
+          <div class="regraContent">EIm = (V&gt;=208 &amp;&amp; V&lt;=600)? EIm600V
+EIm = (V&gt;600 &amp;&amp; V&lt;=2700)? (((((EIm2700V-EIm600V)/2.1)*((V/1000)-2.7)+EIm2700V)*(2.7-(V/1000)))/2.1)+(((((EIm14300V-EIm2700V)/11.6)*((V/1000)-14.3)+EIm14300V)*((V/1000)-0.6))/2.1)
+EIm = (V&gt;2700 &amp;&amp; V&lt;=15000)? ((EIm14300V-EIm2700V)/11.6)*((V/1000)-14.3)+EIm14300V</div>
+        </details>
+
+        <details class="regraItem">
+          <summary>(RC.11) Energia Incidente Reduzida Final (EIr)[cal/cm²]</summary>
+          <div class="regraContent">EIr = (V&gt;=208 &amp;&amp; V&lt;=600)? EIr600V
+EIr = (V&gt;600 &amp;&amp; V&lt;=2700)? (((((EIr2700V-EIr600V)/2.1)*((V/1000)-2.7)+EIr2700V)*(2.7-(V/1000)))/2.1)+(((((EIr14300V-EIr2700V)/11.6)*((V/1000)-14.3)+EIr14300V)*((V/1000)-0.6))/2.1)
+EIr = (V&gt;2700 &amp;&amp; V&lt;=15000)? ((EIr14300V-EIr2700V)/11.6)*((V/1000)-14.3)+EIr14300V</div>
+        </details>
+
+        <details class="regraItem">
+          <summary>(RC.12) Limites de Aproximação Seguros Médios de Referência (LASm600V, LASm2700V, LASm14300V)[mm]</summary>
+          <div class="regraContent">LASm600V = 10**((k1+k2*log(G)+(k3*IARCm600V/(k4*ICC**7+k5*ICC**6+k6*ICC**5+k7*ICC**4+k8*ICC**3+k9*ICC**2+k10*ICC))+k11*log(ICC)+k13*log(IARCm600V)+log(1/FCinvo)-log(20/T))/-k12)
+LASm2700V = 10**((k1+k2*log(G)+(k3*IARCm2700V/(k4*ICC**7+k5*ICC**6+k6*ICC**5+k7*ICC**4+k8*ICC**3+k9*ICC**2+k10*ICC))+k11*log(ICC)+k13*log(IARCm2700V)+log(1/FCinvo)-log(20/T))/-k12)
+LASm14300V = 10**((k1+k2*log(G)+(k3*IARCm14300V/(k4*ICC**7+k5*ICC**6+k6*ICC**5+k7*ICC**4+k8*ICC**3+k9*ICC**2+k10*ICC))+k11*log(ICC)+k13*log(IARCm14300V)+log(1/FCinvo)-log(20/T))/-k12)</div>
+        </details>
+
+        <details class="regraItem">
+          <summary>(RC.13) Limites de Aproximação Seguros Reduzidos de Referência (LASr600V, LASr2700V, LASr14300V)[mm]</summary>
+          <div class="regraContent">LASr600V = 10**((k1+k2*log(G)+(k3*IARCr600V/(k4*ICC**7+k5*ICC**6+k6*ICC**5+k7*ICC**4+k8*ICC**3+k9*ICC**2+k10*ICC))+k11*log(ICC)+k13*log(IARCr600V)+log(1/FCinvo)-log(20/T))/-k12)
+LASr2700V = 10**((k1+k2*log(G)+(k3*IARCr2700V/(k4*ICC**7+k5*ICC**6+k6*ICC**5+k7*ICC**4+k8*ICC**3+k9*ICC**2+k10*ICC))+k11*log(ICC)+k13*log(IARCr2700V)+log(1/FCinvo)-log(20/T))/-k12)
+LASr14300V = 10**((k1+k2*log(G)+(k3*IARCr14300V/(k4*ICC**7+k5*ICC**6+k6*ICC**5+k7*ICC**4+k8*ICC**3+k9*ICC**2+k10*ICC))+k11*log(ICC)+k13*log(IARCr14300V)+log(1/FCinvo)-log(20/T))/-k12)</div>
+        </details>
+
+        <details class="regraItem">
+          <summary>(RC.14) Limite de Aproximação Seguro Médio Final (LASm)[mm]</summary>
+          <div class="regraContent">LASm = (V&gt;=208 &amp;&amp; V&lt;=600)? LASm600V
+LASm = (V&gt;600 &amp;&amp; V&lt;=2700)? (((((LASm2700V-LASm600V)/2.1)*((V/1000)-2.7)+LASm2700V)*(2.7-(V/1000)))/2.1)+(((((LASm14300V-LASm2700V)/11.6)*((V/1000)-14.3)+LASm14300V)*((V/1000)-0.6))/2.1)
+LASm = (V&gt;2700 &amp;&amp; V&lt;=15000)? ((LASm14300V-LASm2700V)/11.6)*((V/1000)-14.3)+LASm14300V</div>
+        </details>
+
+        <details class="regraItem">
+          <summary>(RC.15) Limite de Aproximação Seguro Reduzido Final (LASr)[mm]</summary>
+          <div class="regraContent">LASr = (V&gt;=208 &amp;&amp; V&lt;=600)? LASr600V
+LASr = (V&gt;600 &amp;&amp; V&lt;=2700)? (((((LASr2700V-LASr600V)/2.1)*((V/1000)-2.7)+LASr2700V)*(2.7-(V/1000)))/2.1)+(((((LASr14300V-LASr2700V)/11.6)*((V/1000)-14.3)+LASr14300V)*((V/1000)-0.6))/2.1)
+LASr = (V&gt;2700 &amp;&amp; V&lt;=15000)? ((LASr14300V-LASr2700V)/11.6)*((V/1000)-14.3)+LASr14300V</div>
+        </details>
+
+        <details class="regraItem">
+          <summary>(TB.1) Tabela de coeficientes FCiarc</summary>
+          <div class="regraContent">VCB:  {k1: 0, k2: -0.0000014269, k3: 0.000083137, k4: -0.0019382, k5: 0.022366, k6: -0.12645, k7: 0.30226},
+VCBB: {k1: 1.138e-06, k2: -6.0287e-05, k3: 0.0012758, k4: -0.013778, k5: 0.080217, k6: -0.24066, k7: 0.33524},
+HCB:  {k1: 0, k2: -3.097e-06, k3: 0.00016405, k4: -0.0033609, k5: 0.033308, k6: -0.16182, k7: 0.34627},
+VOA:  {k1: 9.561e-07, k2: -5.1543e-05, k3: 0.0011161, k4: -0.01242, k5: 0.075125, k6: -0.23584, k7: 0.33696},
+HOA:  {k1: 0, k2: -3.1555e-06, k3: 0.0001682, k4: -0.0034607, k5: 0.034124, k6: -0.1599, k7: 0.34629}</div>
+        </details>
+
+        <details class="regraItem">
+          <summary>(TB.2) Tabela de coeficientes IARCm</summary>
+          <div class="regraContent">VCB:600V:    {k1: -0.04287, k2: 1.035, k3: -0.083, k4: 0, k5: 0, k6: -4.783e-9, k7: 1.962e-6, k8: -0.000229, k9: 0.003141, k10: 1.092},
+VCB:2700V:   {k1: 0.0065, k2: 1.001, k3: -0.024, k4: -1.557e-12, k5: 4.556e-10, k6: -4.186e-8, k7: 8.346e-7, k8: 5.482e-5, k9: -0.003191, k10: 0.9729},
+VCB:14300V:  {k1: 0.005795, k2: 1.015, k3: -0.011, k4: -1.557e-12, k5: 4.556e-10, k6: -4.186e-8, k7: 8.346e-7, k8: 5.482e-5, k9: -0.003191, k10: 0.9729}
+   	
+VCBB:600V:   {k1: -0.017432, k2: 0.98, k3: -0.05, k4: 0, k5: 0, k6: -5.767e-9, k7: 2.542e-6, k8: -0.00034, k9: 0.01187, k10: 1.013},
+VCBB:2700V:  {k1: 0.002823, k2: 0.995, k3: -0.0125, k4: 0, k5: -9.200e-11, k6: 2.901e-8, k7: -3.262e-6, k8: 0.0001569, k9: -0.004003, k10: 0.98250},
+VCBB:14300V: {k1: 0.014827, k2: 1.01, k3: -0.01, k4: 0, k5: -9.200e-11, k6: 2.901e-8, k7: -3.262e-6, k8: 0.0001569, k9: -0.004003, k10: 0.98250}
+   	
+HCB:600V:    {k1: 0.054922, k2: 0.988, k3: -0.11, k4: 0, k5: 0, k6: -5.382e-9, k7: 2.316e-6, k8: -0.000302, k9: 0.0091, k10: 0.97250},
+HCB:2700V:   {k1: 0.001011, k2: 1.003, k3: -0.0249, k4: 0, k5: 0, k6: 4.859e-10, k7: -1.814e-7, k8: -9.128e-6, k9: -0.0007, k10: 0.98810},
+HCB:14300V:  {k1: 0.008693, k2: 0.999, k3: -0.02, k4: 0, k5: -5.040e-11, k6: 2.233e-8, k7: -3.046e-6, k8: 0.000116, k9: -0.001145, k10: 0.98390}
+   	
+VOA:600V:    {k1: 0.043785, k2: 1.04, k3: -0.18, k4: 0, k5: 0, k6: -4.783e-9, k7: 1.962e-6, k8: -0.000229, k9: 0.003141, k10: 1.092},
+VOA:2700V:   {k1: -0.02395, k2: 1.006, k3: -0.0188, k4: -1.557e-12, k5: 4.556e-10, k6: -4.186e-8, k7: 8.346e-7, k8: 5.482e-5, k9: -0.003191, k10: 0.9729},
+VOA:14300V:  {k1: 0.005371, k2: 1.010, k3: -0.029, k4: -1.557e-12, k5: 4.556e-10, k6: -4.186e-8, k7: 8.346e-7, k8: 5.482e-5, k9: -0.003191, k10: 0.9729}
+   	
+HOA:600V:    {k1: 0.111147, k2: 1.008, k3: -0.24, k4: 0, k5: 0, k6: -3.895e-9, k7: 1.641e-6, k8: -0.000197, k9: 0.002615, k10: 1.1},
+HOA:2700V:   {k1: 0.000435, k2: 1.006, k3: -0.0380, k4: 0, k5: 0, k6: 7.859e-10, k7: -1.914e-7, k8: -9.128e-6, k9: -0.0007, k10: 0.9981},
+HOA:14300V:  {k1: 0.000904, k2: 0.999, k3: -0.02, k4: 0, k5: 0, k6: 7.859e-10, k7: -1.914e-7, k8: -9.128e-6, k9: -0.0007, k10: 0.9981}</div>
+        </details>
+
+        <details class="regraItem">
+          <summary>(TB.3) Tabela de coeficientes EI e LAS</summary>
+          <div class="regraContent">VCB:600V:    {k1: 0.753364, k2: 0.566, k3: 1.752636, k4: 0, k5: 0, k6: -4.783e-9, k7: 1.962e-6, k8: -0.000229, k9: 0.003141, k10: 1.092, k11: 0, k12: -1.598, k13: 0.957},
+VCB:2700V:   {k1: 2.40021,  k2: 0.165, k3: 0.354202, k4: -1.557e-12, k5: 4.556e-10, k6: -4.186e-8, k7: 8.346e-7, k8: 5.482e-5, k9: -0.003191, k10: 0.9729, k11: 0, k12: -1.569, k13: 0.9778},
+VCB:14300V:  {k1: 3.825917, k2: 0.11,  k3: -0.999749, k4: -1.557e-12, k5: 4.556e-10, k6: -4.186e-8, k7: 8.346e-7, k8: 5.482e-5, k9: -0.003191, k10: 0.9729, k11: 0, k12: -1.568, k13: 0.99}
+    	
+VCBB:600V:   {k1: 3.068459, k2: 0.26,  k3: -0.098107, k4: 0, k5: 0, k6: -5.767e-9, k7: 2.542e-6, k8: -0.00034, k9: 0.01187, k10: 1.013, k11: -0.06, k12: -1.809, k13: 1.19},
+VCBB:2700V:  {k1: 3.870592, k2: 0.185, k3: -0.736618, k4: 0, k5: -9.204e-11, k6: 2.901e-8, k7: -3.262e-6, k8: 0.0001569, k9: -0.004003, k10: 0.9825, k11: 0, k12: -1.742, k13: 1.09},
+VCBB:14300V: {k1: 3.644309, k2: 0.215, k3: -0.585522, k4: 0, k5: -9.204e-11, k6: 2.901e-8, k7: -3.262e-6, k8: 0.0001569, k9: -0.004003, k10: 0.9825, k11: 0, k12: -1.677, k13: 1.06}
+    	
+HCB:600V:    {k1: 4.073745, k2: 0.344, k3: -0.370259, k4: 0, k5: 0, k6: -5.382e-9, k7: 2.316e-6, k8: -0.000302, k9: 0.0091, k10: 0.9725, k11: 0, k12: -2.03, k13: 1.036},
+HCB:2700V:   {k1: 3.486391, k2: 0.177, k3: -0.193101, k4: 0, k5: 0, k6: 4.859e-10, k7: -1.814e-7, k8: -9.128e-6, k9: -0.0007, k10: 0.9881, k11: 0.027, k12: -1.723, k13: 1.055},
+HCB:14300V:  {k1: 3.044516, k2: 0.125, k3: 0.245106, k4: 0, k5: -5.043e-11, k6: 2.233e-8, k7: -3.046e-6, k8: 0.000116, k9: -0.001145, k10: 0.9839, k11: 0, k12: -1.655, k13: 1.084}
+    	
+VOA:600V:    {k1: 0.679294, k2: 0.746, k3: 1.222636, k4: 0, k5: 0, k6: -4.783e-9, k7: 1.962e-6, k8: -0.000229, k9: 0.003141, k10: 1.092, k11: 0, k12: -1.598, k13: 0.997},
+VOA:2700V:   {k1: 3.880724, k2: 0.105, k3: -1.906033, k4: -1.557e-12, k5: 4.556e-10, k6: -4.186e-8, k7: 8.346e-7, k8: 5.482e-5, k9: -0.003191, k10: 0.9729, k11: 0, k12: -1.515, k13: 1.115},
+VOA:14300V:  {k1: 3.405454, k2: 0.12,  k3: -0.93245,  k4: -1.557e-12, k5: 4.556e-10, k6: -4.186e-8, k7: 8.346e-7, k8: 5.482e-5, k9: -0.003191, k10: 0.9729, k11: 0, k12: -1.534, k13: 0.979}
+    	
+HOA:600V:    {k1: 3.470417, k2: 0.465, k3: -0.261863, k4: 0, k5: 0, k6: -3.895e-9, k7: 1.641e-6, k8: -0.000197, k9: 0.002615, k10: 1.1, k11: 0, k12: -1.99, k13: 1.04},
+HOA:2700V:   {k1: 3.616266, k2: 0.149, k3: -0.761561, k4: 0, k5: 0, k6: 7.859e-10, k7: -1.914e-7, k8: -9.128e-6, k9: -0.0007, k10: 0.9981, k11: 0, k12: -1.639, k13: 1.078},
+HOA:14300V:  {k1: 2.04049,  k2: 0.177, k3: 1.005092,  k4: 0, k5: 0, k6: 7.859e-10, k7: -1.914e-7, k8: -9.128e-6, k9: -0.0007, k10: 0.9981, k11: -0.05, k12: -1.633, k13: 1.151}</div>
+        </details>
+      </details>
+
+      <!-- LAYOUT: DADOS DE ENTRADA (esquerda) / RESULTADOS (direita) -->
+      <div class="layout">
+
+      <!-- PAINEL: DADOS DE ENTRADA -->
+      <section class="painel painelEntrada">
+      <h3>DADOS DE ENTRADA</h3>
+
+      <div class="campos">
+        <div>
+          <label>Identificação (ID)</label>
+          <input id="I" type="text" value="CDC XX" placeholder="CDC XX"/>
+        </div>
+        <div>
+          <label>Tensão do Sistema (V)</label>
+          <input id="V" type="number" step="1" value="380" placeholder="Ex: 380"/>
+        </div>
+        <div>
+          <label>Potência do Transformador Alimentador (kVA)</label>
+          <input id="S" type="number" step="1" value="500" placeholder="Ex: 500"/>
+        </div>
+        <div>
+          <label>Impedância do Transformador Alimentador (Z%)</label>
+          <input id="Z" type="number" step="0.01" value="5" placeholder="Ex: 5"/>
+        </div>
+        <div>
+          <label>Corrente de Curto-Circuito Trifásica (kA)</label>
+          <input id="ICCin" type="number" step="0.01" placeholder="Ex: 15,2"/>
+          <div id="iccHint" style="display:none; margin-top:4px; font-size:12px; color:#94a3b8">Informada manualmente. Apague o campo para voltar ao cálculo pelo trafo.</div>
+        </div>
+        <div>
+          <label>Altura do Painel (mm)</label>
+          <input id="A" type="number" step="0.1" value="500" placeholder="Ex: 500"/>
+        </div>
+        <div>
+          <label>Largura do Painel (mm)</label>
+          <input id="L" type="number" step="0.1" value="500" placeholder="Ex: 500"/>
+        </div>
+        <div>
+          <label>Profundidade do Painel (mm)</label>
+          <input id="P" type="number" step="0.1" value="300" placeholder="Ex: 300"/>
+        </div>
+        <div>
+          <label>Distância de Trabalho "D" (mm)</label>
+          <input id="D" type="number" step="0.1" value="457" placeholder="Ex: 457"/>
+        </div>
+        <div>
+          <label>Tempo de Extinção do Arco "T" (ms)</label>
+          <input id="T" type="number" step="0.1" value="100" placeholder="Ex: 100"/>
+        </div>
+        <div>
+          <label>Distância entre os Eletrodos "G" (mm)</label>
+          <input id="G" type="number" step="0.1" value="25" placeholder="Ex: 25"/>
+        </div>
+        <div>
+          <label>Configuração dos Eletrodos</label>
+          <select id="E">
+            <option value="VCB" selected>VCB (Vertical em Painel)</option>
+            <option value="VCBB">VCBB (Vertical em Painel com Barreira)</option>
+            <option value="HCB">HCB (Horizontal em Painel)</option>
+            <option value="VOA">VOA (Vertical ao Ar Livre)</option>
+            <option value="HOA">HOA (Horizontal ao Ar Livre)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- BOTÃO CALCULAR -->
+      <div class="actions">
+        <button id="calc">CALCULAR</button>
+      </div>
+
+      </section>
+
+      <!-- PAINEL: RESULTADOS -->
+      <section class="painel">
+      <h3>RESULTADOS</h3>
+      <div class="result" id="out">
+        <pre id="txt">Preencha os dados de entrada e clique em CALCULAR.</pre>
+      </div>
+      </section>
+
+      </div>
+    </div>
+  </div>
+  <!-- #endregion DADOS DE ENTRADA -->
+
+<script>
+
+//#region Campo ICC
+let iccManual = false; // true = ICC digitado pelo usuário (S e Z ficam em branco e são ignorados)
+let guardaS = '', guardaZ = ''; // valores de S e Z guardados para restaurar
+const phS = document.getElementById('S').placeholder, phZ = document.getElementById('Z').placeholder; // placeholders originais
+const elV = document.getElementById('V');
+const elS = document.getElementById('S');
+const elZ = document.getElementById('Z');
+const elICC = document.getElementById('ICCin');
+const iccHint = document.getElementById('iccHint');
+
+function atualizarICC() {
+  if (iccManual) return;
+  const v = parseFloat(elV.value), s = parseFloat(elS.value), z = parseFloat(elZ.value);
+  elICC.value = (v > 0 && s > 0 && z > 0) ? (s / (Math.sqrt(3) * v * (z / 100))).toFixed(2) : '';
+}
+[elV, elS, elZ].forEach(el => el.addEventListener('input', () => {
+  if (iccManual && el !== elV) { iccManual = false; iccHint.style.display = 'none'; elS.placeholder = phS; elZ.placeholder = phZ; } // digitou S ou Z: volta ao cálculo
+  atualizarICC();
+}));
+elICC.addEventListener('input', () => {          // digitou no ICC: limpa S e Z
+  if (elICC.value.trim() !== '' && !iccManual) {
+    iccManual = true;
+    guardaS = elS.value; guardaZ = elZ.value;
+    elS.value = ''; elZ.value = '';
+    elS.placeholder = ''; elZ.placeholder = '';
+    iccHint.style.display = '';
+  }
+});
+elICC.addEventListener('change', () => {         // saiu do ICC vazio: restaura S e Z e recalcula
+  if (iccManual && elICC.value.trim() === '') {
+    iccManual = false;
+    elS.value = guardaS; elZ.value = guardaZ;
+    elS.placeholder = phS; elZ.placeholder = phZ;
+    iccHint.style.display = 'none';
+    atualizarICC();
+  }
+});
+atualizarICC();
+//#endregion Campo ICC
+
+//#region Calcular
+document.querySelectorAll('.campos input, .campos select').forEach(el => {
+  el.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    if (el === elICC) elICC.dispatchEvent(new Event('change')); // ICC vazio: volta ao cálculo pelo trafo
+    document.getElementById('calc').click();
+  });
+});
+document.getElementById('calc').addEventListener('click', ()=>{
+//#endregion Calcular
+
+//#region ValidateNumber
+function n(v) { 
+  const x = parseFloat(v); 
+  return isFinite(x) ? x : 0; 
+}
+
+function fmt(x,dec=2){
+  if(!isFinite(x)) return '-';
+  return Number(x).toLocaleString('pt-BR',{minimumFractionDigits:dec,maximumFractionDigits:dec});
+}
+//#endregion ValidateNumber
+
+//#region Tables
+// Tabela A - Coeficientes para Correntes de Arco Médias de Referência (IARCm)
+const tabelaK4 = {
+    "VCB": {
+        "600":   [-0.04287, 1.035, -0.083, 0, 0, -4.783e-9, 1.962e-6, -0.000229, 0.003141, 1.092],
+        "2700":  [0.0065, 1.001, -0.024, -1.557e-12, 4.556e-10, -4.186e-8, 8.346e-7, 5.482e-5, -0.003191, 0.9729],
+        "14300": [0.005795, 1.015, -0.011, -1.557e-12, 4.556e-10, -4.186e-8, 8.346e-7, 5.482e-5, -0.003191, 0.9729]
+    },
+    "VCBB": {
+        "600":   [-0.017432, 0.98, -0.05, 0, 0, -5.767e-9, 2.542e-6, -0.00034, 0.01187, 1.013],
+        "2700":  [0.002823, 0.995, -0.0125, 0, -9.200e-11, 2.901e-8, -3.262e-6, 0.0001569, -0.004003, 0.98250],
+        "14300": [0.014827, 1.01, -0.01, 0, -9.200e-11, 2.901e-8, -3.262e-6, 0.0001569, -0.004003, 0.98250]
+    },
+    "HCB": {
+        "600":   [0.054922, 0.988, -0.11, 0, 0, -5.382e-9, 2.316e-6, -0.000302, 0.0091, 0.97250],
+        "2700":  [0.001011, 1.003, -0.0249, 0, 0, 4.859e-10, -1.814e-7, -9.128e-6, -0.0007, 0.98810],
+        "14300": [0.008693, 0.999, -0.02, 0, -5.040e-11, 2.233e-8, -3.046e-6, 0.000116, -0.001145, 0.98390]
+    },
+    "VOA": {
+        "600":   [0.043785, 1.04, -0.18, 0, 0, -4.783e-9, 1.962e-6, -0.000229, 0.003141, 1.092],
+        "2700":  [-0.02395, 1.006, -0.0188, -1.557e-12, 4.556e-10, -4.186e-8, 8.346e-7, 5.482e-5, -0.003191, 0.9729],
+        "14300": [0.005371, 1.010, -0.029, -1.557e-12, 4.556e-10, -4.186e-8, 8.346e-7, 5.482e-5, -0.003191, 0.9729]
+    },
+    "HOA": {
+        "600":   [0.111147, 1.008, -0.24, 0, 0, -3.895e-9, 1.641e-6, -0.000197, 0.002615, 1.1],
+        "2700":  [0.000435, 1.006, -0.0380, 0, 0, 7.859e-10, -1.914e-7, -9.128e-6, -0.0007, 0.9981],
+        "14300": [0.000904, 0.999, -0.02, 0, 0, 7.859e-10, -1.914e-7, -9.128e-6, -0.0007, 0.9981]
+    }
+};
+
+// Tabela B - Coeficientes para Fator Correntes de Arco Reduzidas (FCiarc)
+const tabelaK5 = {
+    "VCB":  [0, -0.0000014269, 0.000083137, -0.0019382, 0.022366, -0.12645, 0.30226],
+    "VCBB": [1.138e-06, -6.0287e-05, 0.0012758, -0.013778, 0.080217, -0.24066, 0.33524],
+    "HCB":  [0, -3.097e-06, 0.00016405, -0.0033609, 0.033308, -0.16182, 0.34627],
+    "VOA":  [9.561e-07, -5.1543e-05, 0.0011161, -0.01242, 0.075125, -0.23584, 0.33696],
+    "HOA":  [0, -3.1555e-06, 0.0001682, -0.0034607, 0.034124, -0.1599, 0.34629]
+};
+
+// Tabela C - Coeficientes para Energia Incidente e Limite Seguro de Aproximação (EI e LAS)
+const tabelaK6 = {
+    "VCB": {
+        "600":   {k1: 0.753364, k2: 0.566, k3: 1.752636, k4: 0, k5: 0, k6: -4.783e-9, k7: 1.962e-6, k8: -0.000229, k9: 0.003141, k10: 1.092, k11: 0, k12: -1.598, k13: 0.957},
+        "2700":  {k1: 2.40021,  k2: 0.165, k3: 0.354202, k4: -1.557e-12, k5: 4.556e-10, k6: -4.186e-8, k7: 8.346e-7, k8: 5.482e-5, k9: -0.003191, k10: 0.9729, k11: 0, k12: -1.569, k13: 0.9778},
+        "14300": {k1: 3.825917, k2: 0.11,  k3: -0.999749, k4: -1.557e-12, k5: 4.556e-10, k6: -4.186e-8, k7: 8.346e-7, k8: 5.482e-5, k9: -0.003191, k10: 0.9729, k11: 0, k12: -1.568, k13: 0.99}
+    },
+    "VCBB": {
+        "600":   {k1: 3.068459, k2: 0.26,  k3: -0.098107, k4: 0, k5: 0, k6: -5.767e-9, k7: 2.542e-6, k8: -0.00034, k9: 0.01187, k10: 1.013, k11: -0.06, k12: -1.809, k13: 1.19},
+        "2700":  {k1: 3.870592, k2: 0.185, k3: -0.736618, k4: 0, k5: -9.204e-11, k6: 2.901e-8, k7: -3.262e-6, k8: 0.0001569, k9: -0.004003, k10: 0.9825, k11: 0, k12: -1.742, k13: 1.09},
+        "14300": {k1: 3.644309, k2: 0.215, k3: -0.585522, k4: 0, k5: -9.204e-11, k6: 2.901e-8, k7: -3.262e-6, k8: 0.0001569, k9: -0.004003, k10: 0.9825, k11: 0, k12: -1.677, k13: 1.06}
+    },
+    "HCB": {
+        "600":   {k1: 4.073745, k2: 0.344, k3: -0.370259, k4: 0, k5: 0, k6: -5.382e-9, k7: 2.316e-6, k8: -0.000302, k9: 0.0091, k10: 0.97250, k11: 0, k12: -2.03, k13: 1.036},
+        "2700":  {k1: 3.486391, k2: 0.177, k3: -0.193101, k4: 0, k5: 0, k6: 4.859e-10, k7: -1.814e-7, k8: -9.128e-6, k9: -0.0007, k10: 0.98810, k11: 0.027, k12: -1.723, k13: 1.055},
+        "14300": {k1: 3.044516, k2: 0.125, k3: 0.245106, k4: 0, k5: -5.043e-11, k6: 2.233e-8, k7: -3.046e-6, k8: 0.000116, k9: -0.001145, k10: 0.98390, k11: 0, k12: -1.655, k13: 1.084}
+    },
+    "VOA": {
+        "600":   {k1: 0.679294, k2: 0.746, k3: 1.222636, k4: 0, k5: 0, k6: -4.783e-9, k7: 1.962e-6, k8: -0.000229, k9: 0.003141, k10: 1.092, k11: 0, k12: -1.598, k13: 0.997},
+        "2700":  {k1: 3.880724, k2: 0.105, k3: -1.906033, k4: -1.557e-12, k5: 4.556e-10, k6: -4.186e-8, k7: 8.346e-7, k8: 5.482e-5, k9: -0.003191, k10: 0.9729, k11: 0, k12: -1.515, k13: 1.115},
+        "14300": {k1: 3.405454, k2: 0.12,  k3: -0.93245,  k4: -1.557e-12, k5: 4.556e-10, k6: -4.186e-8, k7: 8.346e-7, k8: 5.482e-5, k9: -0.003191, k10: 0.9729, k11: 0, k12: -1.534, k13: 0.979}
+    },
+    "HOA": {
+        "600":   {k1: 3.470417, k2: 0.465, k3: -0.261863, k4: 0, k5: 0, k6: -3.895e-9, k7: 1.641e-6, k8: -0.000197, k9: 0.002615, k10: 1.1, k11: 0, k12: -1.99, k13: 1.04},
+        "2700":  {k1: 3.616266, k2: 0.149, k3: -0.761561, k4: 0, k5: 0, k6: 7.859e-10, k7: -1.914e-7, k8: -9.128e-6, k9: -0.0007, k10: 0.9981, k11: 0, k12: -1.639, k13: 1.078},
+        "14300": {k1: 2.04049,  k2: 0.177, k3: 1.005092,  k4: 0, k5: 0, k6: 7.859e-10, k7: -1.914e-7, k8: -9.128e-6, k9: -0.0007, k10: 0.9981, k11: -0.05, k12: -1.633, k13: 1.151}
+    }
+};
+
+// Tabela D - Coeficientes para Fator de Correção do Invólucro (FCinvo)
+const tabelaB8 = {
+    "Tipico": {
+        "VCB":  { b1: -0.0003, b2: 0.03441, b3: 0.4325 },
+        "VCBB": { b1: -0.0003, b2: 0.032,   b3: 0.479 },
+        "HCB":  { b1: -0.0002, b2: 0.01935, b3: 0.6899 }
+    },
+    "Raso": {
+        "VCB":  { b1: 0.00222, b2: -0.0256, b3: 0.6222 },
+        "VCBB": { b1: -0.0028, b2: 0.1194,  b3: -0.2778 },
+        "HCB":  { b1: -0.0006, b2: 0.03722, b3: 0.4778 }
+    }
+};
+//#endregion Tables
+
+//#region MétodoCálculo
+//Cálculo da Corrente de Curto Circuito Trifásica (ICC)[kA]
+function calcularICC(){
+  if (iccManual) return Ik;
+  const ICC = S / (Math.sqrt(3) * V * (Z/100));
+  return ICC;
+}
+
+//Cálculo do Fator de Corrente de Arco Reduzida (FCiarc)
+function calcularFCiarc(){
+  const k5 = tabelaK5[E];
+  const FCiarc = (k5[0] * Math.pow((V/1000), 6)) +
+                (k5[1] * Math.pow((V/1000), 5)) +
+                (k5[2] * Math.pow((V/1000), 4)) +
+                (k5[3] * Math.pow((V/1000), 3)) +
+                (k5[4] * Math.pow((V/1000), 2)) +
+                (k5[5] * (V/1000)) +
+                k5[6];
+return FCiarc;
+}
+
+//Cálculo do Fator de Correção do Invólucro (FCinvo)
+function calcularFCinvo(){
+  //Fator Unitário para Cálculo ao Ar Livre
+  if (E === "VOA" || E === "HOA") return 1;
+  //Determinação de Invólucro Tipico ou Raso
+  const tipoInvolucro = (V < 600 && A <= 508 && L <= 508 && P <= 203.2) ? "Raso" : "Tipico";
+  //Determinação de Altura e Largura Equivalentes
+  let A1 = 0;
+  let L1 = 0;
+  let a = (E === "VCB") ? 4 : 10;
+  let b = (E === "VCB") ? 20 : (E === "VCBB" ? 24 : 22);
+  function DimEq(dim) { return (660.4 + (dim - 660.4) * (((V/1000) + a) / b)) / 25.4; }
+  if (L < 508) {
+          L1 = (tipoInvolucro === "Tipico") ? 20 : (0.03937 * L);
+      } else if (L >= 508 && L <= 660.4) {
+          L1 = 0.03937 * L;
+      } else if (L > 660.4 && L <= 1244.6) {
+          L1 = DimEq(L);
+      } else {
+          L1 = DimEq(1244.6);
+      }
+
+      if (E === "VCB") {
+          if (A < 508) {
+              A1 = (tipoInvolucro === "Tipico") ? 20 : (0.03937 * A);
+          } else if (A >= 508 && A <= 1244.6) {
+              A1 = 0.03937 * A;
+          } else {
+              A1 = 49;
+          }
+      } else {
+          if (A < 508) {
+              A1 = (tipoInvolucro === "Tipico") ? 20 : (0.03937 * A);
+          } else if (A >= 508 && A <= 660.4) {
+              A1 = 0.03937 * A;
+          } else if (A > 660.4 && A <= 1244.6) {
+              A1 = DimEq(A);
+          } else {
+              A1 = DimEq(1244.6);
+          }
+      }
+
+      let FCinvo = 0;
+      const ees = (A1 + L1) / 2;
+      const coeffs = tabelaB8[tipoInvolucro][E];
+      const b1 = coeffs.b1;
+      const b2 = coeffs.b2;
+      const b3 = coeffs.b3;
+            
+      if (tipoInvolucro === "Raso") {
+          FCinvo = 1 / (b1 * Math.pow(ees, 2) + b2 * ees + b3);
+      }
+      if (tipoInvolucro === "Tipico") {
+          FCinvo = b1 * Math.pow(ees, 2) + b2 * ees + b3;
+      }
+  return FCinvo;
+  }
+
+//Função Base de Interpolação
+function interpolar(V1, V2, V3) {
+  if (V > 600 && V <= 2700) {
+    const I1 = (V1 * (2.7 - (V / 1000))) / 2.1 + (V2 * ((V / 1000) - 0.6)) / 2.1;
+    const I2 = ((V3 - V2) / 11.6) * ((V / 1000) - 14.3) + V3;
+    return (I1 * (2.7 - (V / 1000))) / 2.1 + (I2 * ((V / 1000) - 0.6)) / 2.1;
+  }
+  if (V > 2700 && V < 15000) {
+    const I3 = ((V3 - V2) / 11.6) * ((V / 1000) - 14.3) + V3;
+    return I3;
+  }
+}
+
+//Cálculo das Correntes de Arco (IARCm600V, IARCm2700V, IARCm14300V, IARCr600V, IARCr2700V, IARCr14300V, IARCm_final, IARCr_final)[kA]
+function calcularIARC() {
+  const IARCref = (Vref) => {
+    const k4 = tabelaK4[E][Vref];
+    const parte1 = Math.pow(10, k4[0] + (k4[1] * Math.log10(ICC)) + (k4[2] * Math.log10(G)));
+    const parte2 = (k4[3] * Math.pow(ICC, 6)) + (k4[4] * Math.pow(ICC, 5)) + 
+                   (k4[5] * Math.pow(ICC, 4)) + (k4[6] * Math.pow(ICC, 3)) + 
+                   (k4[7] * Math.pow(ICC, 2)) + (k4[8] * ICC) + k4[9];
+    return parte1 * parte2; 
+  };
+  const IARCfinal = (IARC600V, IARC2700V, IARC14300V) => {
+    if (V>=208 && V<=600){
+      const termoA = Math.pow(0.6 / (V/1000), 2);
+      const termoB = 1 / Math.pow(IARC600V, 2);
+      const termoC = (Math.pow(0.6, 2) - Math.pow((V/1000), 2)) / (Math.pow(0.6, 2) * Math.pow(ICC, 2)); 
+      const Denominador = Math.sqrt(termoA * (termoB - termoC));
+      const IARCfinal = 1 / Denominador;
+      return IARCfinal;
+    }
+    if (V>600 && V<=15000){
+      const IARCfinal = interpolar(IARC600V, IARC2700V, IARC14300V);
+      return IARCfinal;
+    }
+  };
+  //Correntes Médias de Referência
+  const IARCm600V = IARCref("600");
+  const IARCm2700V = IARCref("2700");
+  const IARCm14300V = IARCref("14300");
+  //Correntes Reduzidas de Referência
+  const IARCr600V = IARCm600V * (1 - 0.5 * FCiarc);
+  const IARCr2700V = IARCm2700V * (1 - 0.5 * FCiarc);
+  const IARCr14300V = IARCm14300V * (1 - 0.5 * FCiarc);
+  //Corrente Média Final
+  const IARCm_final = IARCfinal(IARCm600V, IARCm2700V, IARCm14300V);
+  //Corrente Reduzida Final
+  const IARCr_final = IARCfinal(IARCr600V, IARCr2700V, IARCr14300V);
+return {IARCm600V, IARCm2700V, IARCm14300V, IARCr600V, IARCr2700V, IARCr14300V, IARCm_final, IARCr_final};
+}
+
+//Cálculo de Energias Incidentes (EIm600V, EIm2700V, EIm14300V, EIr600V, EIr2700V, EIr14300V, EIm_final, EIr_final)[cal/cm²]
+function calcularEI() {
+  const EIref = (Vref, IarcVal) => {
+    const k6 = tabelaK6[E][Vref];
+    const poli = (k6.k4 * Math.pow(ICC, 7)) + (k6.k5 * Math.pow(ICC, 6)) +
+                 (k6.k6 * Math.pow(ICC, 5)) + (k6.k7 * Math.pow(ICC, 4)) +
+                 (k6.k8 * Math.pow(ICC, 3)) + (k6.k9 * Math.pow(ICC, 2)) +
+                 (k6.k10 * ICC);
+                 
+    const exp = k6.k1 + 
+                (k6.k2 * Math.log10(G)) + 
+                ((k6.k3 * IarcVal) / poli) + 
+                (k6.k11 * Math.log10(ICC)) + 
+                (k6.k12 * Math.log10(D)) + 
+                (k6.k13 * Math.log10(IarcVal)) + 
+                Math.log10(1 / FCinvo);
+                
+    const E_joules = (12.552 / 50) * T * Math.pow(10, exp);
+    return E_joules / 4.184; // Retorna em cal/cm²
+  };
+
+  const EIfinal = (EI600V, EI2700V, EI14300V) => {
+    if (V >= 208 && V <= 600) return EI600V;
+    if (V > 600 && V <= 15000) return interpolar(EI600V, EI2700V, EI14300V);
+  };
+  //Energia Incidente Média de Referência
+  const EIm600V   = EIref("600",   IARC.IARCm600V);
+  const EIm2700V  = EIref("2700",  IARC.IARCm2700V);
+  const EIm14300V = EIref("14300", IARC.IARCm14300V);
+  //Energia Incidente Reduzida de Referência
+  const EIr600V   = EIref("600",   IARC.IARCr600V);
+  const EIr2700V  = EIref("2700",  IARC.IARCr2700V);
+  const EIr14300V = EIref("14300", IARC.IARCr14300V);
+  //Energia Incidente Média Final
+  const EIm_final = EIfinal(EIm600V, EIm2700V, EIm14300V);
+  //Energia Incidente Reduzida Final
+  const EIr_final = EIfinal(EIr600V, EIr2700V, EIr14300V);
+
+  return {EIm600V, EIm2700V, EIm14300V, EIr600V, EIr2700V, EIr14300V, EIm_final, EIr_final};
+}
+
+//Cálculo de Limites de Aproximação Seguros (LASm600V, LASm2700V, LASm14300V, LASr600V, LASr2700V, LASr14300V, LASm_final, LASr_final)[mm]
+function calcularLAS() {
+  const LASref = (Vref, IarcVal) => {
+    const k6 = tabelaK6[E][Vref];
+    const poli = (k6.k4 * Math.pow(ICC, 7)) + (k6.k5 * Math.pow(ICC, 6)) +
+                 (k6.k6 * Math.pow(ICC, 5)) + (k6.k7 * Math.pow(ICC, 4)) +
+                 (k6.k8 * Math.pow(ICC, 3)) + (k6.k9 * Math.pow(ICC, 2)) +
+                 (k6.k10 * ICC);
+
+    const expNumerador = k6.k1 + 
+                         (k6.k2 * Math.log10(G)) + 
+                         ((k6.k3 * IarcVal) / poli) + 
+                         (k6.k11 * Math.log10(ICC)) + 
+                         (k6.k13 * Math.log10(IarcVal)) + 
+                         Math.log10(1 / FCinvo) - 
+                         Math.log10(20 / T);
+
+    return Math.pow(10, expNumerador / (-k6.k12));
+  };
+
+  const LASfinal = (LAS600V, LAS2700V, LAS14300V) => {
+    if (V >= 208 && V <= 600) return LAS600V;
+    if (V > 600 && V <= 15000) return interpolar(LAS600V, LAS2700V, LAS14300V);
+  };
+
+  //Limite de Aproximação Seguro Médio de Referência
+  const LASm600V   = LASref("600",   IARC.IARCm600V);
+  const LASm2700V  = LASref("2700",  IARC.IARCm2700V);
+  const LASm14300V = LASref("14300", IARC.IARCm14300V);
+  //Limite de Aproximação Seguro Reduzido de Referência
+  const LASr600V   = LASref("600",   IARC.IARCr600V);
+  const LASr2700V  = LASref("2700",  IARC.IARCr2700V);
+  const LASr14300V = LASref("14300", IARC.IARCr14300V);
+  //Limite de Aproximação Seguro Médio Final
+  const LASm_final = LASfinal(LASm600V, LASm2700V, LASm14300V);
+  //Limite de Aproximação Seguro Reduzido Final
+  const LASr_final = LASfinal(LASr600V, LASr2700V, LASr14300V);
+
+  return { LASm600V, LASm2700V, LASm14300V, LASr600V, LASr2700V, LASr14300V, LASm_final, LASr_final };
+}
+//#endregion MétodoCálculo
+
+//#region GetInputs
+  const ID = document.getElementById('I').value.trim(); // Identificação do Painel
+  const V = n(document.getElementById('V').value); // Tensão do Sistema
+  const S = n(document.getElementById('S').value); // Potência do Trafo
+  const Z = n(document.getElementById('Z').value); // Impedância do Trafo
+  const A = n(document.getElementById('A').value); // Altura do Painel
+  const L = n(document.getElementById('L').value); // Largura do Painel
+  const P = n(document.getElementById('P').value); // Profundidade do Painel
+  const D = n(document.getElementById('D').value); // Distância de Trabalho
+  const T = n(document.getElementById('T').value); // Tempo de Extinção do Arco
+  const G = n(document.getElementById('G').value); // Distância entre os Eletrodos
+  const E = document.getElementById('E').value;    // Configuração dos Eletrodos
+  const Ik = n(document.getElementById('ICCin').value); // ICC informada manualmente [kA]
+//#endregion GetInputs
+
+//#region Alerts
+//Valores Menores que Zero
+  if (V <= 0 || G <= 0 || D <= 0 || T <= 0 || A <= 0 || L <= 0 || P <= 0 || (iccManual ? Ik <= 0 : (S <= 0 || Z <= 0))) {
+      document.getElementById('txt').innerHTML = '<span class="erro">Por favor, informe valores válidos e maiores que zero para todos os campos.</span>';
+      return;
+  }
+//Valores de Tensão Maiores que 15kV
+  if (V > 15000) {
+      document.getElementById('txt').innerHTML = '<span class="erro">A tensão informada está acima do limite suportado (15.000 V).</span>';
+      return;
+  }
+//Valores de Tensão Menores que 208V
+  if (V < 208) {
+    document.getElementById('txt').innerHTML = '<span class="erro">A tensão informada está abaixo do limite suportado (208 V).</span>';
+    return;
+  }
+//#endregion Alerts
+
+//#region EXEC
+  const ICC    = calcularICC();
+  const FCiarc = calcularFCiarc();
+  const FCinvo = calcularFCinvo();
+  const IARC   = calcularIARC();
+  const EI     = calcularEI();
+  const LAS    = calcularLAS();
+//#endregion
+
+//#region Resultados
+  const IARC_final = Math.max(IARC.IARCm_final, IARC.IARCr_final);
+  const EI_final   = Math.max(EI.EIm_final, EI.EIr_final);
+  const LAS_final  = Math.max(LAS.LASm_final, LAS.LASr_final);
+  const nomeConfig = {
+    VCB:  "vertical em painel",
+    VCBB: "vertical em painel com barreira",
+    HCB:  "horizontal em painel",
+    VOA:  "vertical ao ar livre",
+    HOA:  "horizontal ao ar livre"
+  };
+  const W     = 60;                                              
+  const sep1  = "=".repeat(W) + "\n";
+  const sep2  = "-".repeat(W) + "\n";
+  const v     = (s) => `<span class="v">${s}</span>`;
+  const esc   = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const num   = (x) => Number(x).toLocaleString('pt-BR', {maximumFractionDigits: 2});
+  const mmIn  = (x) => `${v(fmt(x, 0) + " mm")} / ${v(fmt(x / 25.4, 1) + " in")}`;
+  const dado  = (sim, rot, val) => ` (${sim}) ${rot}: ${val}\n`;
+  const ref   = (rot, m, r, un, dec, sepMR = " / ") =>
+    ` ${rot} - (${v(fmt(m, dec) + " " + un)}${sepMR}${v(fmt(r, dec) + " " + un)})\n`;
+  const bloco = (titulo, o, p, un, dec) =>
+    ` ${titulo}\n` +
+    (V <= 600 ? "" :
+      ref("Ref.600V",   o[p + "m600V"],   o[p + "r600V"],   un, dec) +
+      ref("Ref.2700V",  o[p + "m2700V"],  o[p + "r2700V"],  un, dec) +
+      ref("Ref.14300V", o[p + "m14300V"], o[p + "r14300V"], un, dec)) +
+    ref(`Ref.${V}V`,  o[p + "m_final"], o[p + "r_final"], un, dec, " - ");
+
+  const titulo = "MEMÓRIA DE CÁLCULO";
+  let out = sep1 + " ".repeat(Math.floor((W - titulo.length) / 2)) + v(titulo) + "\n" + sep1;
+
+  out += dado("I", "Identificação", v(esc(ID)));
+  out += dado("V", "Tensão do Sistema",          v(`${num(V)} V`));
+  if (!iccManual) {
+    out += dado("S", "Potência do Trafo",        v(`${num(S)} kVA`));
+    out += dado("Z", "Impedância do Trafo",      v(`${num(Z)} %`));
+  }
+  out += dado("A", "Altura do Painel",           mmIn(A));
+  out += dado("L", "Largura do Painel",          mmIn(L));
+  out += dado("P", "Profundidade do Painel",     mmIn(P));
+  out += dado("D", "Distância de Trabalho",      mmIn(D));
+  out += dado("T", "Tempo de Extinção do Arco",  v(`${num(T)} ms`));
+  out += dado("G", "Distância entre Eletrodos",  mmIn(G));
+  out += dado("E", "Configuração dos Eletrodos", v(`${E} (${nomeConfig[E]})`));
+  out += sep2;
+  out += dado("ICC", "Corrente de Curto Circuito" + (iccManual ? " (informada)" : ""), v(`${fmt(ICC, 1)} kA`));
+  out += dado("FCiarc", "Fator de Cálculo Corrente Reduzida",     v(fmt(FCiarc, 4)));
+  out += dado("FCinvo", "Fator de Cálculo Correção do Invólucro", v(fmt(FCinvo, 4)));
+  out += sep2;
+  out += bloco("(IARC) CORRENTE DE ARCO (média / reduzida) [kA]",            IARC, "IARC", "kA",      1);
+  out += sep2;
+  out += bloco("(EI) ENERGIA INCIDENTE (média / reduzida) [cal/cm²]",        EI,   "EI",   "cal/cm²", 1);
+  out += sep2;
+  out += bloco("(LAS) LIMITE DE APROXIMAÇÃO SEGURO (médio / reduzido) [mm]", LAS,  "LAS",  "mm",      0);
+  out += sep1;
+  out += "A ABNT NBR 17227:2025 E O IEEE 1584:2018 ORIENTAM QUE OS\n";
+  out += "CÁLCULOS SEJAM REALIZADOS COM AS CORRENTES DE ARCO MÉDIAS E\n";
+  out += "REDUZIDAS, ADOTANDO O MAIOR VALOR OBTIDO, SENDO:\n\n";
+  out += v(`(IARC) CORRENTE DE ARCO: ${fmt(IARC_final, 1)} kA`) + "\n";
+  out += v(`(EI) ENERGIA INCIDENTE: ${fmt(EI_final, 1)} cal/cm²`) + "\n";
+  out += v(`(LAS) LIMITE DE APROXIMAÇÃO SEGURO: ${fmt(LAS_final, 0)} mm`) + "\n";
+  out += sep1;
+
+  document.getElementById('out').style.display = 'block';
+  document.getElementById('txt').innerHTML = out;
+  document.getElementById('out').scrollIntoView({ behavior: 'smooth', block: window.matchMedia('(max-width:1200px)').matches ? 'start' : 'nearest' });
+  //#endregion Resultados
+});
+</script>
+</body>
+</html>
