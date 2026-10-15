@@ -191,6 +191,54 @@
     }
     @media (prefers-reduced-motion:reduce){*{transition:none !important;}}
 
+
+    /* Etiqueta (impressa e colada no painel): sempre clara, independente do tema */
+    .etq-wrap{display:flex; flex-direction:column; align-items:center; gap:16px; margin:auto;}
+    #tab-etiqueta.active{display:flex;}
+    #tab-etiqueta.etq-alinhado{position:relative;}
+    #tab-etiqueta.etq-alinhado .btn-print{position:absolute; left:50%; transform:translateX(-50%);}
+    .btn-print{
+      display:inline-flex; align-items:center; gap:8px; cursor:pointer;
+      background:var(--panel-raised); color:var(--text); border:1px solid var(--line);
+      padding:8px 16px; font:600 12.5px 'IBM Plex Sans',sans-serif; line-height:1.55;
+      transition:border-color .15s,color .15s;
+    }
+    .btn-print:hover{border-color:var(--safety); color:var(--safety);}
+    .btn-print:focus-visible{outline:2px solid var(--safety); outline-offset:2px;}
+    .safety-sticker{
+      box-sizing:border-box; width:145mm; height:100mm; display:flex; flex-direction:column;
+      background:#ffffff; color:#111111; border:3px solid #111111; overflow:hidden;
+      font-family:'IBM Plex Sans',system-ui,sans-serif; box-shadow:0 8px 24px rgba(0,0,0,.35);
+      -webkit-print-color-adjust:exact; print-color-adjust:exact;
+    }
+    .sticker-header{
+      display:flex; align-items:center; justify-content:center; gap:8px; padding:10px; line-height:1;
+      background:#f25a00; color:#ffffff; font-weight:900; font-size:40px; letter-spacing:1.5px; text-align:center;
+    }
+    .sticker-subhead{background:#111111; color:#ffffff; text-align:center; font-size:20px; font-weight:700; line-height:1.1; padding:7px 10px; letter-spacing:.3px; text-wrap:balance;}
+    .sticker-body{flex:1; display:grid; grid-template-columns:max-content minmax(0,1fr); gap:6px; padding:14px 12px 20px; font-size:12px; align-items:stretch;}
+    .sb-col{display:flex; flex-direction:column;}
+    .sb-col h4{margin:0 0 5px; padding-bottom:3px; font-size:12px; text-transform:uppercase; color:#111111; border-bottom:1.5px solid #111111;}
+    .sb-items{flex:1; display:grid; grid-template-columns:max-content max-content; column-gap:10px; row-gap:12px; align-content:start; align-items:start;}
+    .epi-lista{margin:0; padding-left:15px; font-size:10px; line-height:1.1;} .epi-lista li{margin:0 0 .5px;} .epi-nota{margin:4px 0 0; font-size:10px; line-height:1.1;}
+    .sb-full{grid-column:1 / -1; contain:inline-size; min-width:0;}
+    .sb-col-dir{border-left:1.5px solid #dddddd; padding-left:5px;}
+    .sb-item{margin:0; line-height:1.2;}
+    .sb-item .lbl{font-size:12px; color:#555555; white-space:nowrap;}
+    .sb-item .val{font:700 18px 'IBM Plex Mono',monospace; line-height:1.1; color:#111111; overflow-wrap:anywhere;}
+    .sb-item .val.destaque{font-size:24px; color:#e65100;}
+    .sb-item .val.val-texto{font:500 12px 'IBM Plex Sans',sans-serif; color:#333333;}
+    .sticker-footer{padding:7px 12px; font-size:10px; color:#444444; background:#f4f4f4; border-top:2px solid #111111; text-align:center;}
+    #folha{display:none;}
+
+    @media print{
+      @page{size:A4 portrait; margin:10mm;}
+      :root{color-scheme:light !important;}
+      html,body{height:auto !important; overflow:visible !important; background:#ffffff !important; display:block !important; margin:0 !important; padding:0 !important;}
+      body > *:not(#folha){display:none !important;}
+      #folha{display:grid !important; grid-template-columns:145mm; grid-auto-rows:100mm; justify-content:center;}
+      #folha .safety-sticker{zoom:1 !important; box-shadow:none; margin:0; break-inside:avoid;}
+    }
   </style>
 </head>
 <body>
@@ -339,8 +387,9 @@
 
       <div class="painel abas">
         <div class="tab-nav" role="tablist" aria-label="Detalhamento">
-          <button class="tab-btn active" role="tab" id="tb-memorial" aria-controls="tab-memorial" aria-selected="true" type="button">Memória de Cálculo</button>
           <button class="tab-btn" role="tab" id="tb-regras" aria-controls="tab-regras" aria-selected="false" tabindex="-1" type="button">Regras de Cálculo</button>
+          <button class="tab-btn active" role="tab" id="tb-memorial" aria-controls="tab-memorial" aria-selected="true" type="button">Memória de Cálculo</button>
+          <button class="tab-btn" role="tab" id="tb-etiqueta" aria-controls="tab-etiqueta" aria-selected="false" tabindex="-1" type="button">Etiqueta</button>
         </div>
         <div class="tab-pane active" role="tabpanel" id="tab-memorial" aria-labelledby="tb-memorial">
           <div class="result" id="out">
@@ -550,6 +599,46 @@ HOA:14300V:  {k1: 2.04049,  k2: 0.177, k3: 1.005092,  k4: 0, k5: 0, k6: 7.859e-1
 
 
         </div>
+
+        <div class="tab-pane" role="tabpanel" id="tab-etiqueta" aria-labelledby="tb-etiqueta">
+          <div class="etq-wrap">
+
+            <div class="safety-sticker" id="etiqueta">
+              <div class="sticker-header">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2L1 21H23L12 2ZM12 6L19.5 19H4.5L12 6ZM11 10V14H13V10H11ZM11 16V18H13V16H11Z"/></svg>
+                PERIGO
+              </div>
+              <div class="sticker-subhead">RISCO DE CHOQUE E ARCO ELÉTRICO</div>
+
+              <div class="sticker-body">
+                <div class="sb-col">
+                  <h4>Parâmetros</h4>
+                  <div class="sb-items">
+                  <div class="sb-item sb-full"><div class="lbl">Identificação (ID):</div><div class="val" id="et-id">--</div></div>
+                  <div class="sb-item"><div class="lbl">Energia Incidente (EI):</div><div class="val destaque" id="et-ei">--</div></div>
+                  <div class="sb-item"><div class="lbl">Tensão do Sistema (V):</div><div class="val" id="et-v">--</div></div>
+                  <div class="sb-item"><div class="lbl">Distância de Trabalho (D):</div><div class="val" id="et-d">--</div></div>
+                  <div class="sb-item"><div class="lbl">Corrente de Curto-Circuito (ICC):</div><div class="val" id="et-icc">--</div></div>
+                  <div class="sb-item"><div class="lbl">Limite de Aprox. Seguro (LAS):</div><div class="val" id="et-las">--</div></div>
+                  <div class="sb-item"><div class="lbl">Corrente de Arco Elétrico (Iarc):</div><div class="val" id="et-iarc">--</div></div>
+                  </div>
+                </div>
+
+                <div class="sb-col sb-col-dir">
+                  <h4>E.P.I. requerido</h4>
+                  <div class="sb-item"><div class="val val-texto" id="et-epi">Texto de recomendação de EPI</div></div>
+                </div>
+              </div>
+
+              <div class="sticker-footer">Ref.: ABNT NBR 17227:2025 / IEEE 1584:2018</div>
+            </div>
+
+            <button class="btn-print" id="btn-print" type="button">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+              Imprimir / Salvar PDF
+            </button>
+          </div>
+        </div>
       </div>
 
     </section>
@@ -559,6 +648,56 @@ HOA:14300V:  {k1: 2.04049,  k2: 0.177, k3: 1.005092,  k4: 0, k5: 0, k6: 7.859e-1
 <!-- #endregion DADOS DE ENTRADA -->
 
 <script>
+//#region Impressão da etiqueta
+// Folha A4 com 1 etiqueta de 145 x 100 mm, montada só no momento de imprimir.
+function montarFolha(){
+  desmontarFolha();
+  const modelo = document.getElementById('etiqueta');
+  const folha = document.createElement('div');
+  folha.id = 'folha';
+  for (let i = 0; i < 1; i++) {
+    const c = modelo.cloneNode(true);
+    c.removeAttribute('id'); c.style.zoom = '';
+    c.querySelectorAll('[id]').forEach(e => e.removeAttribute('id'));
+    folha.appendChild(c);
+  }
+  document.body.appendChild(folha);
+}
+function desmontarFolha(){ const f = document.getElementById('folha'); if (f) f.remove(); }
+window.addEventListener('beforeprint', montarFolha);
+window.addEventListener('afterprint', desmontarFolha);
+document.getElementById('btn-print').addEventListener('click', () => window.print());
+
+// Na tela, reduz a prévia da etiqueta só o necessário para caber no quadro (na impressão o tamanho é sempre 100%).
+function ajustarEtiqueta(){
+  const pane = document.getElementById('tab-etiqueta'), st = document.getElementById('etiqueta'), btn = document.getElementById('btn-print'), calc = document.getElementById('calc');
+  if (!pane.classList.contains('active')) return;
+  st.style.zoom = 1;
+  const cs = getComputedStyle(pane);
+  const padT = parseFloat(cs.paddingTop), padB = parseFloat(cs.paddingBottom);
+  const livreW = pane.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const lateral = window.matchMedia('(min-width:1101px)').matches; // painel de dados ao lado: botão alinhado ao centro do "Calcular"
+  let livreH;
+  pane.classList.toggle('etq-alinhado', lateral);
+  if (lateral) {
+    const pr = pane.getBoundingClientRect(), cr = calc.getBoundingClientRect();
+    const centroBtn = cr.top + cr.height / 2 - pr.top + pane.scrollTop;          // y do centro do botão dentro do painel
+    btn.style.top = (centroBtn - btn.offsetHeight / 2) + 'px';
+    const centroEt = padT + (pane.clientHeight - padT - padB) / 2;                // etiqueta centrada no painel
+    const topoBtn = centroBtn - btn.offsetHeight / 2 - 12;
+    livreH = 2 * Math.min(centroEt - padT, topoBtn - centroEt);
+  } else {
+    btn.style.top = '';
+    livreH = pane.clientHeight - padT - padB - btn.offsetHeight - 20;
+  }
+  st.style.zoom = Math.min(1, livreH / st.offsetHeight, livreW / st.offsetWidth);
+}
+const agendarAjuste = () => requestAnimationFrame(ajustarEtiqueta);
+document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', agendarAjuste));
+document.getElementById('calc').addEventListener('click', agendarAjuste);
+window.addEventListener('resize', agendarAjuste);
+//#endregion Impressão da etiqueta
+
 //#region Tema
 function atualizarTextoTema(){
   const claro = document.documentElement.getAttribute('data-theme') === 'light';
@@ -671,7 +810,7 @@ document.querySelectorAll('.campos input, .campos select').forEach(el => {
   });
 });
 document.getElementById('calc').addEventListener('click', ()=>{
-  document.querySelectorAll('#kpis [id^="k-"]').forEach(e => e.textContent = '--');
+  document.querySelectorAll('#kpis [id^="k-"], #etiqueta [id^="et-"]:not(#et-epi)').forEach(e => e.textContent = '--');
 //#endregion Calcular
 
 //#region ValidateNumber
@@ -1088,6 +1227,21 @@ function calcularLAS() {
   kpi('k-ei',   EI.EIm_final,     EI.EIr_final,     EI_final,   1);
   kpi('k-las',  LAS.LASm_final,   LAS.LASr_final,   LAS_final,  0);
   document.getElementById('k-tag').textContent = [ID, `${num(V)} V`, `ICC ${fmt(ICC, 1)} kA`, `D ${num(D)} mm`, `T ${num(T)} ms`, E].filter(Boolean).join(' · ');
+  //#region Etiqueta
+  document.getElementById('et-id').textContent   = ID || '--';
+  document.getElementById('et-v').textContent    = `${num(V)} V`;
+  document.getElementById('et-icc').textContent  = `${fmt(ICC, 1)} kA`;
+  document.getElementById('et-iarc').textContent = `${fmt(IARC_final, 1)} kA`;
+  document.getElementById('et-ei').textContent   = `${fmt(EI_final, 1)} cal/cm²`;
+  document.getElementById('et-d').textContent    = `${num(D)} mm`;
+  document.getElementById('et-las').textContent  = `${fmt(LAS_final, 0)} mm`;
+  const EPI_COMUM = ['Capacete, Óculos de Proteção e Protetor Auricular'];
+  const EPI_FINAL = ['Vestimenta com resistência a arco elétrico', 'Luvas com resistência a arco elétrico ou luvas isolantes de borracha com protetores de couro', 'Calçado de Couro'];
+  const EPI_FACE  = EI_final > 12 ? 'Capuz-Carrasco com resistência a arco elétrico' : 'Protetor Facial e Balaclava ou Capuz com resistência a arco elétrico';
+  if (isFinite(EI_final)) document.getElementById('et-epi').innerHTML =
+    '<ul class="epi-lista">' + [...EPI_COMUM, EPI_FACE, ...EPI_FINAL].map(t => `<li>${t}</li>`).join('') + '</ul>' +
+    '<p class="epi-nota">A resistência ao arco elétrico deve ser igual ou superior à energia incidente estimada<br><b>(ATPV &ge; ' + fmt(EI_final, 1) + ' cal/cm²)</b>.</p>';
+  //#endregion Etiqueta
   //#endregion Cartões de resultado
   document.getElementById('txt').innerHTML = out;
   document.getElementById('kpis').scrollIntoView({ behavior: 'smooth', block: window.matchMedia('(max-width:1200px)').matches ? 'start' : 'nearest' });
