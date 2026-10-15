@@ -80,8 +80,8 @@
     }
     .painel-head h2{margin:0; font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--text); font-weight:700;}
     .painelEntrada{display:flex; flex-direction:column;}
-    .painel-body{padding:2px 18px 16px; flex:1; display:flex; flex-direction:column; justify-content:space-between; gap:12px;}
-    .grupo{margin-top:12px;}
+    .painel-body{padding:14px 18px 16px; flex:1; display:flex; flex-direction:column; justify-content:flex-start; gap:10px;}
+    .grupo{margin-top:0;}
     .grupo > h3{
       margin:0 0 10px; padding-bottom:6px; border-bottom:1px solid var(--line-soft);
       font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-faint); font-weight:600;
@@ -100,10 +100,11 @@
       transition:border-color .15s, box-shadow .15s;
     }
     select{font-family:'IBM Plex Sans',sans-serif; font-weight:500; cursor:pointer;}
+    input:disabled{opacity:.4; cursor:not-allowed;}
     input::placeholder{color:var(--text-faint); font-weight:400;}
     input:focus,select:focus{outline:none; border-color:var(--safety); box-shadow:0 0 0 3px var(--safety-glow);}
-    #iccHint{margin-top:5px; font-size:11.5px; color:var(--text-faint);}
-    .actions{margin-top:12px;}
+    #iccHint{margin-top:5px; font-size:11.5px; color:var(--safety);}
+    .actions{margin-top:auto; padding-top:10px;}
     button#calc{
       width:100%; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer;
       background:var(--safety); color:#fff; border:none; padding:13px; border-radius:0;
@@ -134,7 +135,7 @@
     .vazio{padding:46px 20px; text-align:center; color:var(--text-faint); font-size:13px; border:1px dashed var(--line); background:var(--panel);}
 
     .abas{overflow:hidden; flex:1; display:flex; flex-direction:column; min-height:0;}
-    .tab-nav{display:flex; gap:2px; border-bottom:1px solid var(--line); background:var(--panel-raised); padding:0 10px; flex-wrap:wrap;}
+    .tab-nav{display:flex; gap:2px; border-bottom:1px solid var(--line); background:var(--panel-raised); padding:0 10px; flex-wrap:wrap; justify-content:center;}
     .tab-btn{
       background:none; border:none; border-bottom:2px solid transparent; margin-bottom:-1px; cursor:pointer;
       padding:12px 14px; font:600 12.5px 'IBM Plex Sans',sans-serif; color:var(--text-dim); white-space:nowrap;
@@ -145,8 +146,8 @@
     .tab-btn:focus-visible{outline:2px solid var(--safety); outline-offset:-2px;}
     .tab-pane{display:none; padding:12px 18px 14px;}
     .tab-pane.active{display:block; flex:1; min-height:0; overflow:auto;}
-    .result{overflow-x:auto;}
-    pre{margin:0; white-space:pre-wrap; font-size:clamp(10px,1.28vh,12.5px); line-height:1.3; color:var(--text-dim);}
+    .result{overflow-x:auto; display:flex; justify-content:center;}
+    pre{margin:0; width:fit-content; max-width:100%; white-space:pre-wrap; font-size:clamp(10px,1.5vh,12.5px); line-height:1.3; color:var(--text-dim);}
     #txt .v{color:var(--text); font-weight:600;}
     #txt .erro{color:var(--danger);}
 
@@ -186,7 +187,7 @@
       h1{font-size:19px;} .painel-body{padding:4px 14px 14px;}
       .campos:not(.tres){grid-template-columns:1fr;}
       .tab-pane{padding:14px 12px;}
-      pre{font-size:clamp(7px,2.3vw,13px); white-space:pre;}
+      pre{font-size:clamp(8px,2vw,12px); white-space:pre;}
     }
     @media (prefers-reduced-motion:reduce){*{transition:none !important;}}
 
@@ -238,30 +239,56 @@
           <h3>2 · Fonte e curto-circuito</h3>
           <div class="campos">
             <div>
-              <label for="V">Tensão do sistema <i>(V)</i></label>
+              <label for="V">Tensão do Sistema <i>(V)</i></label>
               <input id="V" type="number" step="1" value="380" placeholder="Ex: 380"/>
             </div>
             <div>
-              <label for="S">Potência do trafo <i>(kVA)</i></label>
+              <label for="ICCin">Corrente de Curto-Circuito <i>(kA)</i></label>
+              <input id="ICCin" type="number" step="0.01" placeholder="Ex: 15,2"/>
+            </div>
+            <div>
+              <label for="S">Potência do Trafo <i>(kVA)</i></label>
               <input id="S" type="number" step="1" value="500" placeholder="Ex: 500"/>
             </div>
             <div>
-              <label for="Z">Impedância do trafo <i>(Z%)</i></label>
+              <label for="Z">Impedância do Trafo <i>(Z%)</i></label>
               <input id="Z" type="number" step="0.01" value="5" placeholder="Ex: 5"/>
             </div>
-            <div>
-              <label for="ICCin">Curto-circuito trifásico <i>(kA)</i></label>
-              <input id="ICCin" type="number" step="0.01" placeholder="Ex: 15,2"/>
-            </div>
             <div class="full">
-              <div id="iccHint" style="display:none">Informada manualmente. Apague o campo para voltar ao cálculo pelo trafo.</div>
+              <div id="iccHint" style="display:none">Corrente de curto-circuito informada manualmente, apague para voltar ao cálculo pelo trafo.</div>
             </div>
           </div>
         </div>
 
         <div class="grupo">
-          <h3>3 · Painel</h3>
+          <h3>3 · Exposição e eletrodos</h3>
           <div class="campos tres">
+            <div>
+              <label for="D">Dist. trabalho “D” <i>(mm)</i></label>
+              <input id="D" type="number" step="0.1" value="457" placeholder="457"/>
+            </div>
+            <div>
+              <label for="T">Tempo Ext. Arco “T” <i>(ms)</i></label>
+              <input id="T" type="number" step="0.1" value="100" placeholder="100"/>
+            </div>
+            <div>
+              <label for="G">Dist. Eletrodos “G” <i>(mm)</i></label>
+              <input id="G" type="number" step="0.1" value="25" placeholder="25"/>
+            </div>
+          </div>
+          <div class="campos" style="margin-top:10px">
+            <div class="full">
+              <label for="E">Configuração dos Eletrodos “E”</label>
+              <select id="E">
+                <option value="VCB" selected>VCB (Vertical em Painel)</option>
+                <option value="VCBB">VCBB (Vertical em Painel com Barreira)</option>
+                <option value="HCB">HCB (Horizontal em Painel)</option>
+                <option value="VOA">VOA (Vertical ao Ar Livre)</option>
+                <option value="HOA">HOA (Horizontal ao Ar Livre)</option>
+              </select>
+            </div>
+          </div>
+          <div class="campos tres" style="margin-top:10px">
             <div>
               <label for="A">Altura <i>(mm)</i></label>
               <input id="A" type="number" step="0.1" value="500" placeholder="500"/>
@@ -273,36 +300,6 @@
             <div>
               <label for="P">Profundidade <i>(mm)</i></label>
               <input id="P" type="number" step="0.1" value="300" placeholder="300"/>
-            </div>
-          </div>
-        </div>
-
-        <div class="grupo">
-          <h3>4 · Exposição e eletrodos</h3>
-          <div class="campos tres">
-            <div>
-              <label for="D">Dist. trabalho “D” <i>(mm)</i></label>
-              <input id="D" type="number" step="0.1" value="457" placeholder="457"/>
-            </div>
-            <div>
-              <label for="T">Tempo Ext. Arco <i>(ms)</i></label>
-              <input id="T" type="number" step="0.1" value="100" placeholder="100"/>
-            </div>
-            <div>
-              <label for="G">Dist. Eletrodos “G” <i>(mm)</i></label>
-              <input id="G" type="number" step="0.1" value="25" placeholder="25"/>
-            </div>
-          </div>
-          <div class="campos" style="margin-top:10px">
-            <div class="full">
-              <label for="E">Configuração dos eletrodos</label>
-              <select id="E">
-                <option value="VCB" selected>VCB (Vertical em Painel)</option>
-                <option value="VCBB">VCBB (Vertical em Painel com Barreira)</option>
-                <option value="HCB">HCB (Horizontal em Painel)</option>
-                <option value="VOA">VOA (Vertical ao Ar Livre)</option>
-                <option value="HOA">HOA (Horizontal ao Ar Livre)</option>
-              </select>
             </div>
           </div>
         </div>
@@ -600,6 +597,28 @@ atualizarTextoTema();
   });
 })();
 //#endregion Abas
+
+//#region Dimensões do Painel (VOA/HOA)
+// Ao ar livre (VOA/HOA) o FCinvo vale 1 e as dimensões do painel não entram no cálculo: os campos ficam em branco e desabilitados.
+(function(){
+  const elE = document.getElementById('E');
+  const dims = ['A', 'L', 'P'].map(id => document.getElementById(id));
+  const guarda = {}, ph = {};
+  dims.forEach(el => ph[el.id] = el.placeholder);
+  let aberto = false;
+  function atualizar(){
+    const novo = (elE.value === 'VOA' || elE.value === 'HOA');
+    if (novo === aberto) return;
+    aberto = novo;
+    dims.forEach(el => {
+      if (aberto) { guarda[el.id] = el.value; el.value = ''; el.placeholder = ''; el.disabled = true; }
+      else        { el.value = guarda[el.id] ?? ''; el.placeholder = ph[el.id]; el.disabled = false; }
+    });
+  }
+  elE.addEventListener('change', atualizar);
+  atualizar();
+})();
+//#endregion Dimensões do Painel
 
 
 //#region Campo ICC
@@ -970,7 +989,7 @@ function calcularLAS() {
 
 //#region Alerts
 //Valores Menores que Zero
-  if (V <= 0 || G <= 0 || D <= 0 || T <= 0 || A <= 0 || L <= 0 || P <= 0 || (iccManual ? Ik <= 0 : (S <= 0 || Z <= 0))) {
+  if (V <= 0 || G <= 0 || D <= 0 || T <= 0 || (!(E === "VOA" || E === "HOA") && (A <= 0 || L <= 0 || P <= 0)) || (iccManual ? Ik <= 0 : (S <= 0 || Z <= 0))) {
       document.getElementById('txt').innerHTML = '<span class="erro">Por favor, informe valores válidos e maiores que zero para todos os campos.</span>';
       return;
   }
@@ -1025,6 +1044,7 @@ function calcularLAS() {
     ref(`Ref.${V}V`,  o[p + "m_final"], o[p + "r_final"], un, dec, " - ");
 
   let out = sep1;
+  const painelFechado = !(E === "VOA" || E === "HOA"); // ao ar livre não há painel: dimensões e FCinvo não são exibidos
 
   out += dado("I", "Identificação", v(esc(ID)));
   out += dado("V", "Tensão do Sistema",          v(`${num(V)} V`));
@@ -1032,9 +1052,9 @@ function calcularLAS() {
     out += dado("S", "Potência do Trafo",        v(`${num(S)} kVA`));
     out += dado("Z", "Impedância do Trafo",      v(`${num(Z)} %`));
   }
-  out += dado("A", "Altura do Painel",           mmIn(A));
-  out += dado("L", "Largura do Painel",          mmIn(L));
-  out += dado("P", "Profundidade do Painel",     mmIn(P));
+  if (painelFechado) out += dado("A", "Altura do Painel",           mmIn(A));
+  if (painelFechado) out += dado("L", "Largura do Painel",          mmIn(L));
+  if (painelFechado) out += dado("P", "Profundidade do Painel",     mmIn(P));
   out += dado("D", "Distância de Trabalho",      mmIn(D));
   out += dado("T", "Tempo de Extinção do Arco",  v(`${num(T)} ms`));
   out += dado("G", "Distância entre Eletrodos",  mmIn(G));
@@ -1042,7 +1062,7 @@ function calcularLAS() {
   out += sep2;
   out += dado("ICC", "Corrente de Curto Circuito" + (iccManual ? " (informada)" : ""), v(`${fmt(ICC, 1)} kA`));
   out += dado("FCiarc", "Fator de Cálculo Corrente Reduzida",     v(fmt(FCiarc, 4)));
-  out += dado("FCinvo", "Fator de Cálculo Correção do Invólucro", v(fmt(FCinvo, 4)));
+  if (painelFechado) out += dado("FCinvo", "Fator de Cálculo Correção do Invólucro", v(fmt(FCinvo, 4)));
   out += sep2;
   out += bloco("(IARC) CORRENTE DE ARCO (média / reduzida) [kA]",            IARC, "IARC", "kA",      1);
   out += sep2;
@@ -1069,7 +1089,6 @@ function calcularLAS() {
   kpi('k-las',  LAS.LASm_final,   LAS.LASr_final,   LAS_final,  0);
   document.getElementById('k-tag').textContent = [ID, `${num(V)} V`, `ICC ${fmt(ICC, 1)} kA`, `D ${num(D)} mm`, `T ${num(T)} ms`, E].filter(Boolean).join(' · ');
   //#endregion Cartões de resultado
-  document.getElementById('out').style.display = 'block';
   document.getElementById('txt').innerHTML = out;
   document.getElementById('kpis').scrollIntoView({ behavior: 'smooth', block: window.matchMedia('(max-width:1200px)').matches ? 'start' : 'nearest' });
   //#endregion Resultados
