@@ -671,7 +671,7 @@ function interpolar(V1, V2, V3) {
     const I2 = ((V3 - V2) / 11.6) * ((V / 1000) - 14.3) + V3;
     return (I1 * (2.7 - (V / 1000))) / 2.1 + (I2 * ((V / 1000) - 0.6)) / 2.1;
   }
-  if (V > 2700 && V < 15000) {
+  if (V > 2700 && V <= 15000) {
     const I3 = ((V3 - V2) / 11.6) * ((V / 1000) - 14.3) + V3;
     return I3;
   }
@@ -718,7 +718,7 @@ return {IARCm600V, IARCm2700V, IARCm14300V, IARCr600V, IARCr2700V, IARCr14300V, 
 
 //Cálculo de Energias Incidentes (EIm600V, EIm2700V, EIm14300V, EIr600V, EIr2700V, EIr14300V, EIm_final, EIr_final)[cal/cm²]
 function calcularEI() {
-  const EIref = (Vref, IarcVal) => {
+  const EI = (Vref, I1, I2) => {
     const k6 = tabelaK6[E][Vref];
     const poli = (k6.k4 * Math.pow(ICC, 7)) + (k6.k5 * Math.pow(ICC, 6)) +
                  (k6.k6 * Math.pow(ICC, 5)) + (k6.k7 * Math.pow(ICC, 4)) +
@@ -727,39 +727,34 @@ function calcularEI() {
                  
     const exp = k6.k1 + 
                 (k6.k2 * Math.log10(G)) + 
-                ((k6.k3 * IarcVal) / poli) + 
+                ((k6.k3 * I1) / poli) + 
                 (k6.k11 * Math.log10(ICC)) + 
                 (k6.k12 * Math.log10(D)) + 
-                (k6.k13 * Math.log10(IarcVal)) + 
+                (k6.k13 * Math.log10(I2)) + 
                 Math.log10(1 / FCinvo);
                 
     const E_joules = (12.552 / 50) * T * Math.pow(10, exp);
     return E_joules / 4.184; // Retorna em cal/cm²
   };
-
-  const EIfinal = (EI600V, EI2700V, EI14300V) => {
-    if (V >= 208 && V <= 600) return EI600V;
-    if (V > 600 && V <= 15000) return interpolar(EI600V, EI2700V, EI14300V);
-  };
   //Energia Incidente Média de Referência
-  const EIm600V   = EIref("600",   IARC.IARCm600V);
-  const EIm2700V  = EIref("2700",  IARC.IARCm2700V);
-  const EIm14300V = EIref("14300", IARC.IARCm14300V);
+  const EIm600V   = EI("600",   IARC.IARCm600V,   IARC.IARCm600V);
+  const EIm2700V  = EI("2700",  IARC.IARCm2700V,  IARC.IARCm2700V);
+  const EIm14300V = EI("14300", IARC.IARCm14300V, IARC.IARCm14300V);
   //Energia Incidente Reduzida de Referência
-  const EIr600V   = EIref("600",   IARC.IARCr600V);
-  const EIr2700V  = EIref("2700",  IARC.IARCr2700V);
-  const EIr14300V = EIref("14300", IARC.IARCr14300V);
+  const EIr600V   = EI("600",   IARC.IARCr600V,   IARC.IARCr600V);
+  const EIr2700V  = EI("2700",  IARC.IARCr2700V,  IARC.IARCr2700V);
+  const EIr14300V = EI("14300", IARC.IARCr14300V, IARC.IARCr14300V);
   //Energia Incidente Média Final
-  const EIm_final = EIfinal(EIm600V, EIm2700V, EIm14300V);
+  const EIm_final = (V >= 208 && V <= 600) ? EI("600", IARC.IARCm600V, IARC.IARCm_final) : (V > 600 && V <= 15000) ? interpolar(EIm600V, EIm2700V, EIm14300V) : undefined;
   //Energia Incidente Reduzida Final
-  const EIr_final = EIfinal(EIr600V, EIr2700V, EIr14300V);
+  const EIr_final = (V >= 208 && V <= 600) ? EI("600", IARC.IARCr600V, IARC.IARCr_final) : (V > 600 && V <= 15000) ? interpolar(EIr600V, EIr2700V, EIr14300V) : undefined;
 
   return {EIm600V, EIm2700V, EIm14300V, EIr600V, EIr2700V, EIr14300V, EIm_final, EIr_final};
 }
 
 //Cálculo de Limites de Aproximação Seguros (LASm600V, LASm2700V, LASm14300V, LASr600V, LASr2700V, LASr14300V, LASm_final, LASr_final)[mm]
 function calcularLAS() {
-  const LASref = (Vref, IarcVal) => {
+  const LAS = (Vref, I1, I2) => {
     const k6 = tabelaK6[E][Vref];
     const poli = (k6.k4 * Math.pow(ICC, 7)) + (k6.k5 * Math.pow(ICC, 6)) +
                  (k6.k6 * Math.pow(ICC, 5)) + (k6.k7 * Math.pow(ICC, 4)) +
@@ -768,32 +763,26 @@ function calcularLAS() {
 
     const expNumerador = k6.k1 + 
                          (k6.k2 * Math.log10(G)) + 
-                         ((k6.k3 * IarcVal) / poli) + 
+                         ((k6.k3 * I1) / poli) + 
                          (k6.k11 * Math.log10(ICC)) + 
-                         (k6.k13 * Math.log10(IarcVal)) + 
+                         (k6.k13 * Math.log10(I2)) + 
                          Math.log10(1 / FCinvo) - 
                          Math.log10(20 / T);
 
     return Math.pow(10, expNumerador / (-k6.k12));
   };
-
-  const LASfinal = (LAS600V, LAS2700V, LAS14300V) => {
-    if (V >= 208 && V <= 600) return LAS600V;
-    if (V > 600 && V <= 15000) return interpolar(LAS600V, LAS2700V, LAS14300V);
-  };
-
   //Limite de Aproximação Seguro Médio de Referência
-  const LASm600V   = LASref("600",   IARC.IARCm600V);
-  const LASm2700V  = LASref("2700",  IARC.IARCm2700V);
-  const LASm14300V = LASref("14300", IARC.IARCm14300V);
+  const LASm600V   = LAS("600",   IARC.IARCm600V, IARC.IARCm600V);
+  const LASm2700V  = LAS("2700",  IARC.IARCm2700V, IARC.IARCm2700V);
+  const LASm14300V = LAS("14300", IARC.IARCm14300V, IARC.IARCm14300V);
   //Limite de Aproximação Seguro Reduzido de Referência
-  const LASr600V   = LASref("600",   IARC.IARCr600V);
-  const LASr2700V  = LASref("2700",  IARC.IARCr2700V);
-  const LASr14300V = LASref("14300", IARC.IARCr14300V);
+  const LASr600V   = LAS("600",   IARC.IARCr600V, IARC.IARCr600V);
+  const LASr2700V  = LAS("2700",  IARC.IARCr2700V, IARC.IARCr2700V);
+  const LASr14300V = LAS("14300", IARC.IARCr14300V, IARC.IARCr14300V);
   //Limite de Aproximação Seguro Médio Final
-  const LASm_final = LASfinal(LASm600V, LASm2700V, LASm14300V);
+  const LASm_final = (V >= 208 && V <= 600) ? LAS("600", IARC.IARCm600V, IARC.IARCm_final) : (V > 600 && V <= 15000) ? interpolar(LASm600V, LASm2700V, LASm14300V) : undefined;
   //Limite de Aproximação Seguro Reduzido Final
-  const LASr_final = LASfinal(LASr600V, LASr2700V, LASr14300V);
+  const LASr_final = (V >= 208 && V <= 600) ? LAS("600", IARC.IARCr600V, IARC.IARCr_final) : (V > 600 && V <= 15000) ? interpolar(LASr600V, LASr2700V, LASr14300V) : undefined;
 
   return { LASm600V, LASm2700V, LASm14300V, LASr600V, LASr2700V, LASr14300V, LASm_final, LASr_final };
 }
