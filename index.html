@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>CALCULADORA DE ARCO ELÉTRICO E ENERGIA INCIDENTE</title>
+  <title>ARC FLASH</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -364,7 +364,7 @@
     <section class="resultados">
 
       <div id="kpis">
-        <div class="kpi-head"><h2>Resultado adotado</h2><span id="k-tag">--</span></div>
+        <div class="kpi-head"><h2>Resultados</h2><span id="k-tag">--</span></div>
         <div class="kpi-grid">
           <div class="kpi">
             <div class="rot">(IARC) Corrente de arco</div>
@@ -667,14 +667,20 @@ function desmontarFolha(){ const f = document.getElementById('folha'); if (f) f.
 const tituloOriginal = document.title;
 function tituloEtiqueta(){
   const lim = s => s.replace(/[\\/:*?"<>|\s]+/g, '');
-  const id = lim(document.getElementById('et-id').textContent), ei = lim(document.getElementById('et-ei').textContent.replace('/', '_').replace('²', '2'));
-  return `Etiqueta ArcFlash - ${id} - ${ei}`;
+  const id = lim(document.getElementById('et-id').textContent);
+  const ei = lim(document.getElementById('et-ei').textContent.split('cal')[0]); // só o número (ex.: 2,4)
+  return `Etiqueta ArcFlash - ${id} - EI ${ei}`;
 }
-function prepararImpressao(){ document.title = tituloEtiqueta(); montarFolha(); }
-function encerrarImpressao(){ document.title = tituloOriginal; desmontarFolha(); }
+function sincronizarTitulo(){
+  document.title = document.getElementById('tab-etiqueta').classList.contains('active') ? tituloEtiqueta() : tituloOriginal;
+}
+document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => requestAnimationFrame(sincronizarTitulo)));
+document.getElementById('calc').addEventListener('click', () => requestAnimationFrame(sincronizarTitulo));
+function prepararImpressao(){ sincronizarTitulo(); montarFolha(); }
+function encerrarImpressao(){ desmontarFolha(); }
 window.addEventListener('beforeprint', prepararImpressao);
 window.addEventListener('afterprint', encerrarImpressao);
-document.getElementById('btn-print').addEventListener('click', () => window.print());
+document.getElementById('btn-print').addEventListener('click', () => { sincronizarTitulo(); window.print(); });
 
 // Na tela, reduz a prévia da etiqueta só o necessário para caber no quadro (na impressão o tamanho é sempre 100%).
 function ajustarEtiqueta(){
