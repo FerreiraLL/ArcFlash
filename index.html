@@ -232,11 +232,11 @@
     #folha{display:none;}
 
     @media print{
-      @page{size:A4 portrait; margin:10mm;}
+      @page{size:A4 portrait; margin:0mm;}
       :root{color-scheme:light !important;}
       html,body{height:auto !important; overflow:visible !important; background:#ffffff !important; display:block !important; margin:0 !important; padding:0 !important;}
       body > *:not(#folha){display:none !important;}
-      #folha{display:grid !important; grid-template-columns:145mm; grid-auto-rows:100mm; justify-content:center;}
+      #folha{display:grid !important; grid-template-columns:145mm; grid-auto-rows:100mm; justify-content:center; padding-top:10mm;}
       #folha .safety-sticker{zoom:1 !important; box-shadow:none; margin:0; break-inside:avoid;}
     }
   </style>
@@ -664,8 +664,16 @@ function montarFolha(){
   document.body.appendChild(folha);
 }
 function desmontarFolha(){ const f = document.getElementById('folha'); if (f) f.remove(); }
-window.addEventListener('beforeprint', montarFolha);
-window.addEventListener('afterprint', desmontarFolha);
+const tituloOriginal = document.title;
+function tituloEtiqueta(){
+  const lim = s => s.replace(/[\\/:*?"<>|\s]+/g, '');
+  const id = lim(document.getElementById('et-id').textContent), ei = lim(document.getElementById('et-ei').textContent.replace('/', '_').replace('²', '2'));
+  return `Etiqueta ArcFlash - ${id} - ${ei}`;
+}
+function prepararImpressao(){ document.title = tituloEtiqueta(); montarFolha(); }
+function encerrarImpressao(){ document.title = tituloOriginal; desmontarFolha(); }
+window.addEventListener('beforeprint', prepararImpressao);
+window.addEventListener('afterprint', encerrarImpressao);
 document.getElementById('btn-print').addEventListener('click', () => window.print());
 
 // Na tela, reduz a prévia da etiqueta só o necessário para caber no quadro (na impressão o tamanho é sempre 100%).
